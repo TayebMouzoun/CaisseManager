@@ -14,9 +14,14 @@ const OperationVoucher: React.FC<OperationVoucherProps> = ({ operation }) => {
   const { t } = useTranslation();
   const { locations } = useSelector((state: RootState) => state.locations);
   const { users } = useSelector((state: RootState) => state.users);
+  const { operations } = useSelector((state: RootState) => state.cash);
   
   const location = locations.find(loc => loc.id === operation.locationId);
   const user = users.find(u => u.id === operation.createdBy);
+  // For return operations, find the related cash out operation
+  const relatedOperation = operation.type === 'return' && operation.relatedOperationId
+    ? operations.find(op => op.id === operation.relatedOperationId)
+    : null;
   
   const getOperationTitle = () => {
     switch (operation.type) {
@@ -160,6 +165,41 @@ const OperationVoucher: React.FC<OperationVoucherProps> = ({ operation }) => {
                   <Grid item xs={6}>
                     <Typography variant="body1" sx={{ fontWeight: 'bold' }}>
                       {operation.observation}
+                    </Typography>
+                  </Grid>
+                </>
+              )}
+              
+              {operation.type === 'return' && relatedOperation && (
+                <>
+                  <Grid item xs={6}>
+                    <Typography variant="body2" sx={{ color: '#666' }}>
+                      {t('relatedToVoucher')}:
+                    </Typography>
+                  </Grid>
+                  <Grid item xs={6}>
+                    <Typography variant="body1" sx={{ fontWeight: 'bold' }}>
+                      {relatedOperation.voucherNumber}
+                    </Typography>
+                  </Grid>
+                  <Grid item xs={6}>
+                    <Typography variant="body2" sx={{ color: '#666' }}>
+                      {t('relatedOperationAmount')}:
+                    </Typography>
+                  </Grid>
+                  <Grid item xs={6}>
+                    <Typography variant="body1" sx={{ fontWeight: 'bold', color: '#d32f2f' }}>
+                      {formatCurrency(relatedOperation.amount)}
+                    </Typography>
+                  </Grid>
+                  <Grid item xs={6}>
+                    <Typography variant="body2" sx={{ color: '#666' }}>
+                      {t('relatedOperationDate')}:
+                    </Typography>
+                  </Grid>
+                  <Grid item xs={6}>
+                    <Typography variant="body1" sx={{ fontWeight: 'bold' }}>
+                      {formatDateTime(relatedOperation.date)}
                     </Typography>
                   </Grid>
                 </>

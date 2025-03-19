@@ -135,6 +135,27 @@ const CashOperations: React.FC = () => {
       width: 200,
     },
     {
+      field: 'relatedOperation',
+      headerName: t('relatedOperation'),
+      width: 200,
+      renderCell: (params) => {
+        const operation = params.row as CashOperation;
+        if (operation.type === 'return' && operation.relatedOperationId) {
+          const relatedOp = operations.find(op => op.id === operation.relatedOperationId);
+          return relatedOp ? (
+            <Chip
+              label={`${relatedOp.voucherNumber.slice(0, 10)}...`}
+              color="warning"
+              size="small"
+              onClick={() => handleSelectOperation(relatedOp)}
+              sx={{ cursor: 'pointer' }}
+            />
+          ) : '-';
+        }
+        return '-';
+      },
+    },
+    {
       field: 'date',
       headerName: t('date'),
       width: 180,
@@ -269,6 +290,35 @@ const CashOperations: React.FC = () => {
                   operationId={selectedOperation.id}
                   existingAttachmentUrl={selectedOperation.attachmentUrl}
                 />
+              )}
+
+              {selectedOperation.type === 'return' && selectedOperation.relatedOperationId && (
+                <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
+                  <Typography variant="body2" color="text.secondary">
+                    {t('relatedOperation')}:
+                  </Typography>
+                  <Typography variant="body2" sx={{ 
+                    fontWeight: 'bold',
+                    display: 'flex',
+                    alignItems: 'center'
+                  }}>
+                    {(() => {
+                      const relatedOp = operations.find(op => op.id === selectedOperation.relatedOperationId);
+                      return relatedOp ? (
+                        <>
+                          {relatedOp.voucherNumber}
+                          <Button 
+                            size="small" 
+                            sx={{ ml: 1, minWidth: 'auto', p: 0.5 }}
+                            onClick={() => handleSelectOperation(relatedOp)}
+                          >
+                            <RemoveRedEye fontSize="small" />
+                          </Button>
+                        </>
+                      ) : t('notFound');
+                    })()}
+                  </Typography>
+                </Box>
               )}
             </Paper>
           </Grid>

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { useTranslation } from 'react-i18next';
@@ -46,7 +46,7 @@ const CashManagement: React.FC = () => {
   const dispatch = useDispatch();
   const { user } = useSelector((state: RootState) => state.auth);
   const { locations } = useSelector((state: RootState) => state.locations);
-  const { currentOperation } = useSelector((state: RootState) => state.cash);
+  const { currentOperation, operations } = useSelector((state: RootState) => state.cash);
   const { sources } = useSelector((state: RootState) => state.sources);
   
   const [activeTab, setActiveTab] = useState<OperationType>('in');
@@ -58,6 +58,7 @@ const CashManagement: React.FC = () => {
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
   const [success, setSuccess] = useState<boolean>(false);
   const [voucherRef, setVoucherRef] = useState<React.RefObject<HTMLDivElement>>(React.createRef());
+  const [relatedOperationId, setRelatedOperationId] = useState<string>('');
   
   // Filtrer les sources en fonction du type d'opération
   const sourceOptions = sources
@@ -81,6 +82,12 @@ const CashManagement: React.FC = () => {
       setLocationId(user.locationId);
     }
   }, [user]);
+  
+  // Get a list of all out operations for the return operation selection
+  const cashOutOperations = useSelector((state: RootState) => 
+    state.cash.operations.filter(op => op.type === 'out')
+      .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
+  );
   
   const handlePrint = useReactToPrint({
     content: () => voucherRef.current,
@@ -114,6 +121,10 @@ const CashManagement: React.FC = () => {
       newErrors.locationId = t('required');
     }
     
+    if (activeTab === 'return' && !relatedOperationId) {
+      newErrors.relatedOperationId = t('required');
+    }
+    
     setErrors(newErrors);
     
     return Object.keys(newErrors).length === 0;
@@ -136,6 +147,7 @@ const CashManagement: React.FC = () => {
       createdBy: user?.id || '',
       locationId,
       isSigned: false,
+      ...(activeTab === 'return' && { relatedOperationId }),
     };
     
     dispatch(addOperation(operationData));
@@ -152,6 +164,7 @@ const CashManagement: React.FC = () => {
     }
     setErrors({});
     setSuccess(false);
+    setRelatedOperationId('');
   };
   
   return (
@@ -418,6 +431,47 @@ const CashManagement: React.FC = () => {
                     </Grid>
                   )}
                   
+                  {activeTab === 'return' && (
+                    <Grid item xs={12}>
+                      <FormControl 
+                        fullWidth 
+                        required 
+                        error={!!errors.relatedOperationId}
+                        sx={{
+                          '& .MuiOutlinedInput-root': {
+                            '& fieldset': {
+                              borderColor: 'rgba(255, 160, 0, 0.5)',
+                            },
+                            '&:hover fieldset': {
+                              borderColor: '#ffa000',
+                            },
+                            '&.Mui-focused fieldset': {
+                              borderColor: '#ffa000',
+                            },
+                          },
+                        }}
+                      >
+                        <InputLabel id="related-operation-label">{t('relatedCashOutOperation')}</InputLabel>
+                        <Select
+                          labelId="related-operation-label"
+                          value={relatedOperationId}
+                          label={t('relatedCashOutOperation')}
+                          onChange={(e) => setRelatedOperationId(e.target.value as string)}
+                        >
+                          <MenuItem value="">{t('select')}</MenuItem>
+                          {cashOutOperations.map((operation) => (
+                            <MenuItem key={operation.id} value={operation.id}>
+                              {operation.voucherNumber} - {formatCurrency(operation.amount).replace('$', '')} MAD - {operation.source} ({new Date(operation.date).toLocaleDateString()})
+                            </MenuItem>
+                          ))}
+                        </Select>
+                        {errors.relatedOperationId && (
+                          <FormHelperText>{errors.relatedOperationId}</FormHelperText>
+                        )}
+                      </FormControl>
+                    </Grid>
+                  )}
+                  
                   <Grid item xs={12}>
                     <Button
                       type="submit"
@@ -553,6 +607,17 @@ const CashManagement: React.FC = () => {
                       </Typography>
                       <Typography variant="body2" sx={{ fontWeight: 'bold' }}>
                         {currentOperation.observation}
+                      </Typography>
+                    </Box>
+                  )}
+                  
+                  {currentOperation.type === 'return' && currentOperation.relatedOperationId && (
+                    <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
+                      <Typography variant="body2" color="text.secondary">
+                        {t('relatedToVoucher')}:
+                      </Typography>
+                      <Typography variant="body2" sx={{ fontWeight: 'bold' }}>
+                        {operations.find((op: CashOperation) => op.id === currentOperation.relatedOperationId)?.voucherNumber || t('notFound')}
                       </Typography>
                     </Box>
                   )}
