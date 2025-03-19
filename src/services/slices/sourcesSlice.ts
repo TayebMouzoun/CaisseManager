@@ -1,10 +1,71 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { Source, SourceState, SourceFormData } from '../../types/sourceTypes';
+import { v4 as uuidv4 } from 'uuid';
 
 export type { Source, SourceFormData, SourceState } from '../../types/sourceTypes';
 
+// Add some default sources
+const defaultSources: Source[] = [
+  {
+    id: uuidv4(),
+    name: 'Client Payment',
+    type: 'in',
+    description: 'Payment received from clients',
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+  },
+  {
+    id: uuidv4(),
+    name: 'Investment',
+    type: 'in',
+    description: 'Investment funds',
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+  },
+  {
+    id: uuidv4(),
+    name: 'Loan',
+    type: 'in',
+    description: 'Loan received',
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+  },
+  {
+    id: uuidv4(),
+    name: 'Supplier Payment',
+    type: 'out',
+    description: 'Payment to suppliers',
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+  },
+  {
+    id: uuidv4(),
+    name: 'Salary',
+    type: 'out',
+    description: 'Employee salaries',
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+  },
+  {
+    id: uuidv4(),
+    name: 'Utilities',
+    type: 'out',
+    description: 'Utilities payment',
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+  },
+  {
+    id: uuidv4(),
+    name: 'Rent',
+    type: 'out',
+    description: 'Rent payment',
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+  },
+];
+
 const initialState: SourceState = {
-  sources: [],
+  sources: defaultSources,  // Initialize with default sources
   loading: false,
   error: null,
 };

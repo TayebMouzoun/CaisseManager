@@ -68,6 +68,13 @@ const CashManagement: React.FC = () => {
       description: s.description
     }));
   
+  // Debug sources
+  useEffect(() => {
+    console.log('All sources in Redux:', sources);
+    console.log('Filtered sourceOptions for current tab:', sourceOptions);
+    console.log('Active tab:', activeTab);
+  }, [sources, activeTab, sourceOptions]);
+  
   // If user is not admin and has a location assigned, use that location
   useEffect(() => {
     if (user && user.role !== 'admin' && user.locationId) {
@@ -169,23 +176,46 @@ const CashManagement: React.FC = () => {
                   icon={<AddCircleOutline />} 
                   label={t('cashIn')} 
                   value="in"
-                  sx={{ color: activeTab === 'in' ? '#388e3c' : 'inherit' }}
+                  sx={{ 
+                    color: activeTab === 'in' ? '#388e3c' : 'inherit',
+                    bgcolor: activeTab === 'in' ? 'rgba(56, 142, 60, 0.1)' : 'transparent',
+                    borderRadius: '4px 4px 0 0',
+                    fontWeight: activeTab === 'in' ? 'bold' : 'normal'
+                  }}
                 />
                 <Tab 
                   icon={<RemoveCircleOutline />} 
                   label={t('cashOut')} 
                   value="out"
-                  sx={{ color: activeTab === 'out' ? '#d32f2f' : 'inherit' }}
+                  sx={{ 
+                    color: activeTab === 'out' ? '#d32f2f' : 'inherit',
+                    bgcolor: activeTab === 'out' ? 'rgba(211, 47, 47, 0.1)' : 'transparent',
+                    borderRadius: '4px 4px 0 0',
+                    fontWeight: activeTab === 'out' ? 'bold' : 'normal'
+                  }}
                 />
                 <Tab 
                   icon={<KeyboardReturn />} 
                   label={t('cashReturn')} 
                   value="return"
-                  sx={{ color: activeTab === 'return' ? '#ffa000' : 'inherit' }}
+                  sx={{ 
+                    color: activeTab === 'return' ? '#ffa000' : 'inherit',
+                    bgcolor: activeTab === 'return' ? 'rgba(255, 160, 0, 0.1)' : 'transparent',
+                    borderRadius: '4px 4px 0 0',
+                    fontWeight: activeTab === 'return' ? 'bold' : 'normal'
+                  }}
                 />
               </Tabs>
               
-              <Box component="form" onSubmit={handleSubmit}>
+              <Box component="form" onSubmit={handleSubmit} sx={{
+                bgcolor: activeTab === 'in' 
+                  ? 'rgba(56, 142, 60, 0.05)' 
+                  : activeTab === 'out' 
+                  ? 'rgba(211, 47, 47, 0.05)'
+                  : 'rgba(255, 160, 0, 0.05)',
+                p: 2,
+                borderRadius: 1
+              }}>
                 <Grid container spacing={2}>
                   <Grid item xs={12}>
                     <TextField
@@ -200,15 +230,69 @@ const CashManagement: React.FC = () => {
                       InputProps={{
                         startAdornment: (
                           <InputAdornment position="start">
-                            <AttachMoney />
+                            MAD
                           </InputAdornment>
                         ),
+                      }}
+                      sx={{
+                        '& .MuiOutlinedInput-root': {
+                          '& fieldset': {
+                            borderColor: activeTab === 'in' 
+                              ? 'rgba(56, 142, 60, 0.5)' 
+                              : activeTab === 'out' 
+                              ? 'rgba(211, 47, 47, 0.5)'
+                              : 'rgba(255, 160, 0, 0.5)',
+                          },
+                          '&:hover fieldset': {
+                            borderColor: activeTab === 'in' 
+                              ? '#388e3c' 
+                              : activeTab === 'out' 
+                              ? '#d32f2f'
+                              : '#ffa000',
+                          },
+                          '&.Mui-focused fieldset': {
+                            borderColor: activeTab === 'in' 
+                              ? '#388e3c' 
+                              : activeTab === 'out' 
+                              ? '#d32f2f'
+                              : '#ffa000',
+                          },
+                        },
                       }}
                     />
                   </Grid>
                   
                   <Grid item xs={12}>
-                    <FormControl fullWidth required error={!!errors.source}>
+                    <FormControl 
+                      fullWidth 
+                      required 
+                      error={!!errors.source}
+                      sx={{
+                        '& .MuiOutlinedInput-root': {
+                          '& fieldset': {
+                            borderColor: activeTab === 'in' 
+                              ? 'rgba(56, 142, 60, 0.5)' 
+                              : activeTab === 'out' 
+                              ? 'rgba(211, 47, 47, 0.5)'
+                              : 'rgba(255, 160, 0, 0.5)',
+                          },
+                          '&:hover fieldset': {
+                            borderColor: activeTab === 'in' 
+                              ? '#388e3c' 
+                              : activeTab === 'out' 
+                              ? '#d32f2f'
+                              : '#ffa000',
+                          },
+                          '&.Mui-focused fieldset': {
+                            borderColor: activeTab === 'in' 
+                              ? '#388e3c' 
+                              : activeTab === 'out' 
+                              ? '#d32f2f'
+                              : '#ffa000',
+                          },
+                        },
+                      }}
+                    >
                       <InputLabel id="source-label">{t('source')}</InputLabel>
                       <Select
                         labelId="source-label"
@@ -245,6 +329,31 @@ const CashManagement: React.FC = () => {
                           </InputAdornment>
                         ),
                       }}
+                      sx={{
+                        '& .MuiOutlinedInput-root': {
+                          '& fieldset': {
+                            borderColor: activeTab === 'in' 
+                              ? 'rgba(56, 142, 60, 0.5)' 
+                              : activeTab === 'out' 
+                              ? 'rgba(211, 47, 47, 0.5)'
+                              : 'rgba(255, 160, 0, 0.5)',
+                          },
+                          '&:hover fieldset': {
+                            borderColor: activeTab === 'in' 
+                              ? '#388e3c' 
+                              : activeTab === 'out' 
+                              ? '#d32f2f'
+                              : '#ffa000',
+                          },
+                          '&.Mui-focused fieldset': {
+                            borderColor: activeTab === 'in' 
+                              ? '#388e3c' 
+                              : activeTab === 'out' 
+                              ? '#d32f2f'
+                              : '#ffa000',
+                          },
+                        },
+                      }}
                     />
                   </Grid>
                   
@@ -256,6 +365,31 @@ const CashManagement: React.FC = () => {
                       rows={3}
                       value={observation}
                       onChange={(e) => setObservation(e.target.value)}
+                      sx={{
+                        '& .MuiOutlinedInput-root': {
+                          '& fieldset': {
+                            borderColor: activeTab === 'in' 
+                              ? 'rgba(56, 142, 60, 0.5)' 
+                              : activeTab === 'out' 
+                              ? 'rgba(211, 47, 47, 0.5)'
+                              : 'rgba(255, 160, 0, 0.5)',
+                          },
+                          '&:hover fieldset': {
+                            borderColor: activeTab === 'in' 
+                              ? '#388e3c' 
+                              : activeTab === 'out' 
+                              ? '#d32f2f'
+                              : '#ffa000',
+                          },
+                          '&.Mui-focused fieldset': {
+                            borderColor: activeTab === 'in' 
+                              ? '#388e3c' 
+                              : activeTab === 'out' 
+                              ? '#d32f2f'
+                              : '#ffa000',
+                          },
+                        },
+                      }}
                     />
                   </Grid>
                   

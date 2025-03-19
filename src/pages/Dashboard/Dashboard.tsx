@@ -18,6 +18,7 @@ import {
   ListItemAvatar,
   Avatar,
   IconButton,
+  Chip,
 } from '@mui/material';
 import {
   AddCircleOutline,
@@ -30,6 +31,8 @@ import {
   LocationOn,
   Group,
   Settings as SettingsIcon,
+  AttachMoney,
+  MonetizationOn,
 } from '@mui/icons-material';
 import { RootState } from '../../services/store';
 import { formatCurrency } from '../../utils/formatters';
@@ -45,6 +48,18 @@ const Dashboard: React.FC = () => {
   // Calculate total cash across all locations
   const totalCash = balances.reduce((sum, balance) => sum + balance.balance, 0);
   
+  // Get today's operations
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const todayOperations = operations.filter(op => new Date(op.date) >= today);
+  
+  // Calculate monthly revenue
+  const startOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
+  const monthlyOperations = operations.filter(op => new Date(op.date) >= startOfMonth);
+  const monthlyRevenue = monthlyOperations
+    .filter(op => op.type === 'in')
+    .reduce((sum, op) => sum + op.amount, 0);
+  
   // Get recent operations (last 5)
   const recentOperations = [...operations]
     .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
@@ -58,11 +73,11 @@ const Dashboard: React.FC = () => {
   const getOperationTypeIcon = (type: string) => {
     switch (type) {
       case 'in':
-        return <Avatar sx={{ bgcolor: '#388e3c' }}><TrendingUp /></Avatar>;
+        return <Avatar sx={{ bgcolor: 'rgba(56, 142, 60, 0.9)' }}><TrendingUp /></Avatar>;
       case 'out':
-        return <Avatar sx={{ bgcolor: '#d32f2f' }}><TrendingDown /></Avatar>;
+        return <Avatar sx={{ bgcolor: 'rgba(211, 47, 47, 0.9)' }}><TrendingDown /></Avatar>;
       case 'return':
-        return <Avatar sx={{ bgcolor: '#ffa000' }}><KeyboardReturn /></Avatar>;
+        return <Avatar sx={{ bgcolor: 'rgba(255, 160, 0, 0.9)' }}><KeyboardReturn /></Avatar>;
       default:
         return <Avatar><AccountBalance /></Avatar>;
     }
@@ -87,9 +102,16 @@ const Dashboard: React.FC = () => {
   };
   
   return (
-    <Box sx={{ p: 2 }}>
-      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 4 }}>
-        <Typography variant="h4" sx={{ color: '#319269' }}>
+    <Box sx={{ p: { xs: 2, md: 3 } }}>
+      <Box sx={{ 
+        display: 'flex', 
+        justifyContent: 'space-between', 
+        alignItems: 'center', 
+        mb: 4,
+        borderBottom: '2px solid rgba(49, 146, 105, 0.2)',
+        pb: 2
+      }}>
+        <Typography variant="h4" sx={{ color: '#319269', fontWeight: 'bold' }}>
           {t('dashboard')}
         </Typography>
         {user?.role === 'admin' && (
@@ -100,7 +122,13 @@ const Dashboard: React.FC = () => {
             sx={{
               color: '#319269',
               borderColor: '#319269',
-              '&:hover': { borderColor: '#006440' },
+              '&:hover': { 
+                borderColor: '#006440',
+                bgcolor: 'rgba(49, 146, 105, 0.05)'
+              },
+              fontWeight: 500,
+              px: 2,
+              borderRadius: 2,
               textTransform: 'none',
             }}
           >
@@ -111,175 +139,394 @@ const Dashboard: React.FC = () => {
       
       <Grid container spacing={3}>
         {/* Summary Cards */}
-        <Grid item xs={12} md={4}>
+        <Grid item xs={12} md={6} lg={3}>
           <Paper
+            elevation={2}
             sx={{
-              p: 2,
+              p: 2.5,
               display: 'flex',
               flexDirection: 'column',
-              height: 140,
-              borderRadius: 2,
-              boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
+              height: { xs: 160, sm: 160, md: 160 },
+              borderRadius: 3,
+              boxShadow: '0 6px 15px rgba(0,0,0,0.08)',
+              position: 'relative',
+              overflow: 'hidden',
+              '&::after': {
+                content: '""',
+                position: 'absolute',
+                top: 0,
+                left: 0,
+                width: '100%',
+                height: '100%',
+                background: 'linear-gradient(135deg, rgba(49, 146, 105, 0.05) 0%, rgba(49, 146, 105, 0.1) 100%)',
+                zIndex: 0,
+              }
             }}
           >
-            <Typography variant="h6" color="text.secondary">
-              {t('totalCash')}
-            </Typography>
-            <Typography variant="h3" component="div" sx={{ mt: 'auto', color: '#319269', fontWeight: 'bold' }}>
-              {formatCurrency(totalCash)}
-            </Typography>
-          </Paper>
-        </Grid>
-        
-        <Grid item xs={12} md={4}>
-          <Paper
-            sx={{
-              p: 2,
-              display: 'flex',
-              flexDirection: 'column',
-              height: 140,
-              borderRadius: 2,
-              boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
-            }}
-          >
-            <Typography variant="h6" color="text.secondary">
-              {t('totalLocations')}
-            </Typography>
-            <Box sx={{ display: 'flex', alignItems: 'center', mt: 'auto' }}>
-              <LocationOn sx={{ color: '#319269', fontSize: 40, mr: 1 }} />
-              <Typography variant="h3" component="div" sx={{ color: '#319269', fontWeight: 'bold' }}>
-                {locations.length}
+            <Box sx={{ position: 'relative', zIndex: 1 }}>
+              <Typography variant="subtitle1" color="text.secondary" gutterBottom>
+                {t('totalCash')}
+              </Typography>
+              <AttachMoney 
+                sx={{ 
+                  position: 'absolute', 
+                  right: -10, 
+                  top: -15, 
+                  fontSize: 100, 
+                  color: 'rgba(49, 146, 105, 0.1)',
+                  transform: 'rotate(15deg)',
+                }} 
+              />
+              <Typography 
+                variant="h5" 
+                component="div" 
+                sx={{ 
+                  mt: 'auto', 
+                  color: '#319269', 
+                  fontWeight: 'bold',
+                  fontSize: { xs: '1.5rem', sm: '1.6rem', md: '1.7rem' },
+                  whiteSpace: 'nowrap',
+                  overflow: 'hidden',
+                  textOverflow: 'ellipsis'
+                }}
+              >
+                {formatCurrency(totalCash).replace('$', 'MAD ')}
               </Typography>
             </Box>
           </Paper>
         </Grid>
         
-        <Grid item xs={12} md={4}>
+        <Grid item xs={12} md={6} lg={3}>
           <Paper
+            elevation={2}
             sx={{
-              p: 2,
+              p: 2.5,
               display: 'flex',
               flexDirection: 'column',
-              height: 140,
-              borderRadius: 2,
-              boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
+              height: { xs: 160, sm: 160, md: 160 },
+              borderRadius: 3,
+              boxShadow: '0 6px 15px rgba(0,0,0,0.08)',
+              position: 'relative',
+              overflow: 'hidden',
+              '&::after': {
+                content: '""',
+                position: 'absolute',
+                top: 0,
+                left: 0,
+                width: '100%',
+                height: '100%',
+                background: 'linear-gradient(135deg, rgba(255, 160, 0, 0.05) 0%, rgba(255, 160, 0, 0.1) 100%)',
+                zIndex: 0,
+              }
             }}
           >
-            <Typography variant="h6" color="text.secondary">
-              {t('totalUsers')}
-            </Typography>
-            <Box sx={{ display: 'flex', alignItems: 'center', mt: 'auto' }}>
-              <Group sx={{ color: '#319269', fontSize: 40, mr: 1 }} />
-              <Typography variant="h3" component="div" sx={{ color: '#319269', fontWeight: 'bold' }}>
-                {users.length}
+            <Box sx={{ position: 'relative', zIndex: 1, display: 'flex', flexDirection: 'column', height: '100%' }}>
+              <Typography variant="subtitle1" color="text.secondary" gutterBottom>
+                {t('todayOperations')}
               </Typography>
+              <Box sx={{ display: 'flex', alignItems: 'center', mt: 'auto' }}>
+                <Typography 
+                  variant="h5" 
+                  component="div" 
+                  sx={{ 
+                    color: '#ffa000', 
+                    fontWeight: 'bold',
+                    fontSize: { xs: '1.5rem', sm: '1.6rem', md: '1.7rem' }
+                  }}
+                >
+                  {todayOperations.length}
+                </Typography>
+                <Box sx={{ ml: 'auto' }}>
+                  <Box sx={{ 
+                    width: 70, 
+                    height: 70, 
+                    borderRadius: '50%', 
+                    display: 'flex', 
+                    alignItems: 'center', 
+                    justifyContent: 'center',
+                    bgcolor: 'rgba(255, 160, 0, 0.15)',
+                  }}>
+                    <MonetizationOn sx={{ fontSize: 40, color: '#ffa000' }} />
+                  </Box>
+                </Box>
+              </Box>
+            </Box>
+          </Paper>
+        </Grid>
+        
+        <Grid item xs={12} md={6} lg={3}>
+          <Paper
+            elevation={2}
+            sx={{
+              p: 2.5,
+              display: 'flex',
+              flexDirection: 'column',
+              height: { xs: 160, sm: 160, md: 160 },
+              borderRadius: 3,
+              boxShadow: '0 6px 15px rgba(0,0,0,0.08)',
+              position: 'relative',
+              overflow: 'hidden',
+              '&::after': {
+                content: '""',
+                position: 'absolute',
+                top: 0,
+                left: 0,
+                width: '100%',
+                height: '100%',
+                background: 'linear-gradient(135deg, rgba(56, 142, 60, 0.05) 0%, rgba(56, 142, 60, 0.1) 100%)',
+                zIndex: 0,
+              }
+            }}
+          >
+            <Box sx={{ position: 'relative', zIndex: 1, display: 'flex', flexDirection: 'column', height: '100%' }}>
+              <Typography variant="subtitle1" color="text.secondary" gutterBottom>
+                {t('monthlyRevenue')}
+              </Typography>
+              <Box sx={{ display: 'flex', alignItems: 'center', mt: 'auto' }}>
+                <Typography 
+                  variant="h5" 
+                  component="div" 
+                  sx={{ 
+                    color: '#388e3c', 
+                    fontWeight: 'bold',
+                    fontSize: { xs: '1.5rem', sm: '1.6rem', md: '1.7rem' },
+                    whiteSpace: 'nowrap',
+                    overflow: 'hidden',
+                    textOverflow: 'ellipsis',
+                    maxWidth: '70%'
+                  }}
+                >
+                  {formatCurrency(monthlyRevenue).replace('$', 'MAD ')}
+                </Typography>
+                <Box sx={{ ml: 'auto' }}>
+                  <Box sx={{ 
+                    width: 70, 
+                    height: 70, 
+                    borderRadius: '50%', 
+                    display: 'flex', 
+                    alignItems: 'center', 
+                    justifyContent: 'center',
+                    bgcolor: 'rgba(56, 142, 60, 0.15)',
+                  }}>
+                    <TrendingUp sx={{ fontSize: 40, color: '#388e3c' }} />
+                  </Box>
+                </Box>
+              </Box>
+            </Box>
+          </Paper>
+        </Grid>
+        
+        <Grid item xs={12} md={6} lg={3}>
+          <Paper
+            elevation={2}
+            sx={{
+              p: 2.5,
+              display: 'flex',
+              flexDirection: 'column',
+              height: { xs: 160, sm: 160, md: 160 },
+              borderRadius: 3,
+              boxShadow: '0 6px 15px rgba(0,0,0,0.08)',
+              position: 'relative',
+              overflow: 'hidden',
+              '&::after': {
+                content: '""',
+                position: 'absolute',
+                top: 0,
+                left: 0,
+                width: '100%',
+                height: '100%',
+                background: 'linear-gradient(135deg, rgba(25, 118, 210, 0.05) 0%, rgba(25, 118, 210, 0.1) 100%)',
+                zIndex: 0,
+              }
+            }}
+          >
+            <Box sx={{ position: 'relative', zIndex: 1, display: 'flex', flexDirection: 'column', height: '100%' }}>
+              <Typography variant="subtitle1" color="text.secondary" gutterBottom>
+                {t('activeUsers')}
+              </Typography>
+              <Box sx={{ display: 'flex', alignItems: 'center', mt: 'auto' }}>
+                <Typography 
+                  variant="h5" 
+                  component="div" 
+                  sx={{ 
+                    color: '#1976d2', 
+                    fontWeight: 'bold',
+                    fontSize: { xs: '1.5rem', sm: '1.6rem', md: '1.7rem' }
+                  }}
+                >
+                  {users.length}
+                </Typography>
+                <Box sx={{ ml: 'auto' }}>
+                  <Box sx={{ 
+                    width: 70, 
+                    height: 70, 
+                    borderRadius: '50%', 
+                    display: 'flex', 
+                    alignItems: 'center', 
+                    justifyContent: 'center',
+                    bgcolor: 'rgba(25, 118, 210, 0.15)',
+                  }}>
+                    <Group sx={{ fontSize: 40, color: '#1976d2' }} />
+                  </Box>
+                </Box>
+              </Box>
             </Box>
           </Paper>
         </Grid>
         
         {/* Quick Actions */}
         <Grid item xs={12} md={4}>
-          <Card sx={{ borderRadius: 2, boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }}>
-            <CardContent>
-              <Typography variant="h6" gutterBottom>
-                {t('quickActions')}
-              </Typography>
-              <Divider sx={{ mb: 2 }} />
+          <Card 
+            elevation={2}
+            sx={{ 
+              borderRadius: 3, 
+              boxShadow: '0 6px 15px rgba(0,0,0,0.08)', 
+              height: '100%',
+              overflow: 'hidden',
+            }}
+          >
+            <CardContent sx={{ p: 0 }}>
+              <Box sx={{ 
+                p: 2, 
+                background: 'linear-gradient(135deg, rgba(49, 146, 105, 0.05) 0%, rgba(49, 146, 105, 0.15) 100%)',
+                borderBottom: '1px solid rgba(0,0,0,0.05)'
+              }}>
+                <Typography variant="h6" sx={{ fontWeight: 'bold', color: '#319269' }}>
+                  {t('quickActions')}
+                </Typography>
+              </Box>
               
-              <Grid container spacing={2}>
-                <Grid item xs={12}>
-                  <Button
-                    variant="contained"
-                    startIcon={<AddCircleOutline />}
-                    fullWidth
-                    onClick={() => navigate('/caisse')}
-                    sx={{
-                      bgcolor: '#388e3c',
-                      '&:hover': { bgcolor: '#2e7d32' },
-                      textTransform: 'none',
-                      py: 1.5,
-                      borderRadius: 2,
-                    }}
-                  >
-                    {t('cashIn')}
-                  </Button>
+              <Box sx={{ p: 2 }}>
+                <Grid container spacing={2}>
+                  <Grid item xs={12}>
+                    <Button
+                      variant="contained"
+                      startIcon={<AddCircleOutline />}
+                      fullWidth
+                      onClick={() => navigate('/caisse')}
+                      sx={{
+                        bgcolor: '#388e3c',
+                        '&:hover': { bgcolor: '#2e7d32' },
+                        textTransform: 'none',
+                        py: 1.5,
+                        borderRadius: 2,
+                        boxShadow: '0 4px 10px rgba(56, 142, 60, 0.3)',
+                        fontWeight: 600,
+                      }}
+                    >
+                      {t('cashIn')}
+                    </Button>
+                  </Grid>
+                  <Grid item xs={12}>
+                    <Button
+                      variant="contained"
+                      startIcon={<RemoveCircleOutline />}
+                      fullWidth
+                      onClick={() => navigate('/caisse')}
+                      sx={{
+                        bgcolor: '#d32f2f',
+                        '&:hover': { bgcolor: '#c62828' },
+                        textTransform: 'none',
+                        py: 1.5,
+                        borderRadius: 2,
+                        boxShadow: '0 4px 10px rgba(211, 47, 47, 0.3)',
+                        fontWeight: 600,
+                      }}
+                    >
+                      {t('cashOut')}
+                    </Button>
+                  </Grid>
+                  <Grid item xs={12}>
+                    <Button
+                      variant="contained"
+                      startIcon={<KeyboardReturn />}
+                      fullWidth
+                      onClick={() => navigate('/caisse')}
+                      sx={{
+                        bgcolor: '#ffa000',
+                        '&:hover': { bgcolor: '#ff8f00' },
+                        textTransform: 'none',
+                        py: 1.5,
+                        borderRadius: 2,
+                        boxShadow: '0 4px 10px rgba(255, 160, 0, 0.3)',
+                        fontWeight: 600,
+                      }}
+                    >
+                      {t('cashReturn')}
+                    </Button>
+                  </Grid>
                 </Grid>
-                <Grid item xs={12}>
-                  <Button
-                    variant="contained"
-                    startIcon={<RemoveCircleOutline />}
-                    fullWidth
-                    onClick={() => navigate('/caisse')}
-                    sx={{
-                      bgcolor: '#d32f2f',
-                      '&:hover': { bgcolor: '#c62828' },
-                      textTransform: 'none',
-                      py: 1.5,
-                      borderRadius: 2,
-                    }}
-                  >
-                    {t('cashOut')}
-                  </Button>
-                </Grid>
-                <Grid item xs={12}>
-                  <Button
-                    variant="contained"
-                    startIcon={<KeyboardReturn />}
-                    fullWidth
-                    onClick={() => navigate('/caisse')}
-                    sx={{
-                      bgcolor: '#ffa000',
-                      '&:hover': { bgcolor: '#ff8f00' },
-                      textTransform: 'none',
-                      py: 1.5,
-                      borderRadius: 2,
-                    }}
-                  >
-                    {t('cashReturn')}
-                  </Button>
-                </Grid>
-              </Grid>
+              </Box>
             </CardContent>
           </Card>
         </Grid>
         
         {/* Recent Operations */}
         <Grid item xs={12} md={8}>
-          <Paper sx={{ p: 2, borderRadius: 2, boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }}>
-            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
-              <Typography variant="h6">{t('recentOperations')}</Typography>
+          <Paper 
+            elevation={2}
+            sx={{ 
+              borderRadius: 3, 
+              boxShadow: '0 6px 15px rgba(0,0,0,0.08)',
+              overflow: 'hidden',
+              height: '100%',
+            }}
+          >
+            <Box sx={{ 
+              p: 2, 
+              display: 'flex', 
+              justifyContent: 'space-between', 
+              alignItems: 'center',
+              background: 'linear-gradient(135deg, rgba(49, 146, 105, 0.05) 0%, rgba(49, 146, 105, 0.15) 100%)',
+              borderBottom: '1px solid rgba(0,0,0,0.05)'
+            }}>
+              <Typography variant="h6" sx={{ fontWeight: 'bold', color: '#319269' }}>
+                {t('recentOperations')}
+              </Typography>
               <Button
                 variant="outlined"
                 size="small"
-                onClick={() => navigate('/rapports')}
+                onClick={() => navigate('/operations')}
                 sx={{
                   color: '#319269',
                   borderColor: '#319269',
                   '&:hover': {
                     borderColor: '#006440',
+                    bgcolor: 'rgba(49, 146, 105, 0.1)',
                   },
                   textTransform: 'none',
+                  borderRadius: 2,
+                  fontWeight: 500,
                 }}
               >
                 {t('viewAll')}
               </Button>
             </Box>
-            <Divider sx={{ mb: 2 }} />
             
-            <List sx={{ width: '100%', bgcolor: 'background.paper', mb: 2 }}>
+            <List sx={{ bgcolor: 'background.paper', overflow: 'auto', maxHeight: 350, py: 0 }}>
               {recentOperations.length > 0 ? recentOperations.map((operation) => {
                 const location = locations.find(loc => loc.id === operation.locationId);
                 return (
                   <ListItem
                     key={operation.id}
                     secondaryAction={
-                      <IconButton edge="end" onClick={() => navigate(`/operations/${operation.id}`)}>
+                      <IconButton 
+                        edge="end" 
+                        onClick={() => navigate(`/operations/${operation.id}`)}
+                        sx={{ 
+                          color: '#319269',
+                          '&:hover': { bgcolor: 'rgba(49, 146, 105, 0.1)' },
+                        }}
+                      >
                         <Visibility />
                       </IconButton>
                     }
                     sx={{
-                      borderBottom: '1px solid #f0f0f0',
+                      borderBottom: '1px solid rgba(0,0,0,0.05)',
                       '&:last-child': { borderBottom: 'none' },
+                      transition: 'all 0.2s',
+                      '&:hover': { bgcolor: 'rgba(0,0,0,0.02)' },
+                      py: 1.5,
                     }}
                   >
                     <ListItemAvatar>
@@ -287,26 +534,51 @@ const Dashboard: React.FC = () => {
                     </ListItemAvatar>
                     <ListItemText
                       primary={
-                        <Typography variant="body1" sx={{ fontWeight: 'bold' }}>
-                          {operation.type === 'in' ? t('cashIn') : operation.type === 'out' ? t('cashOut') : t('cashReturn')}
+                        <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                          <Chip 
+                            label={operation.type === 'in' ? t('cashIn') : operation.type === 'out' ? t('cashOut') : t('cashReturn')} 
+                            size="small"
+                            sx={{ 
+                              bgcolor: operation.type === 'in' 
+                                ? 'rgba(56, 142, 60, 0.1)' 
+                                : operation.type === 'out' 
+                                ? 'rgba(211, 47, 47, 0.1)'
+                                : 'rgba(255, 160, 0, 0.1)',
+                              color: getOperationTypeColor(operation.type),
+                              fontWeight: 'bold',
+                              mr: 1.5,
+                            }}
+                          />
                           <Typography
-                            component="span"
                             variant="body1"
                             sx={{
-                              ml: 1,
                               color: getOperationTypeColor(operation.type),
                               fontWeight: 'bold',
                             }}
                           >
-                            {formatCurrency(operation.amount)}
+                            {formatCurrency(operation.amount).replace('$', '')} MAD
                           </Typography>
-                        </Typography>
+                        </Box>
                       }
                       secondary={
                         <React.Fragment>
-                          <Typography variant="body2" color="text.secondary">
-                            {operation.source} - {location?.name || ''} 
-                          </Typography>
+                          <Box sx={{ display: 'flex', alignItems: 'center', mt: 0.5 }}>
+                            <Typography variant="body2" color="text.secondary" sx={{ mr: 1 }}>
+                              {operation.source}
+                            </Typography>
+                            {location && (
+                              <Chip 
+                                label={location.name} 
+                                size="small"
+                                sx={{ 
+                                  height: 20, 
+                                  fontSize: '0.75rem',
+                                  bgcolor: 'rgba(49, 146, 105, 0.1)',
+                                  color: '#319269',
+                                }}
+                              />
+                            )}
+                          </Box>
                           <Typography variant="caption" color="text.secondary">
                             {new Date(operation.date).toLocaleDateString('fr-FR')}
                           </Typography>
@@ -316,7 +588,7 @@ const Dashboard: React.FC = () => {
                   </ListItem>
                 );
               }) : (
-                <ListItem>
+                <ListItem sx={{ py: 4 }}>
                   <ListItemText
                     primary={t('noData')}
                     sx={{ textAlign: 'center', color: 'text.secondary' }}
@@ -329,56 +601,94 @@ const Dashboard: React.FC = () => {
         
         {/* Locations List */}
         <Grid item xs={12}>
-          <Paper sx={{ p: 2, borderRadius: 2, boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }}>
-            <Typography variant="h6" gutterBottom>
-              {t('locations')}
-            </Typography>
-            <Divider sx={{ mb: 2 }} />
+          <Paper 
+            elevation={2}
+            sx={{ 
+              borderRadius: 3, 
+              boxShadow: '0 6px 15px rgba(0,0,0,0.08)',
+              overflow: 'hidden',
+            }}
+          >
+            <Box sx={{ 
+              p: 2, 
+              background: 'linear-gradient(135deg, rgba(49, 146, 105, 0.05) 0%, rgba(49, 146, 105, 0.15) 100%)',
+              borderBottom: '1px solid rgba(0,0,0,0.05)'
+            }}>
+              <Typography variant="h6" sx={{ fontWeight: 'bold', color: '#319269' }}>
+                {t('locations')}
+              </Typography>
+            </Box>
             
-            <Grid container spacing={2}>
-              {userLocations.map((location) => (
-                <Grid item xs={12} sm={6} md={4} lg={3} key={location.id}>
-                  <Card sx={{ borderRadius: 2 }}>
-                    <CardContent>
-                      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-                        <Typography variant="h6" component="div">
-                          {location.name}
+            <Box sx={{ p: 2 }}>
+              <Grid container spacing={2}>
+                {userLocations.map((location) => (
+                  <Grid item xs={12} sm={6} md={4} lg={3} key={location.id}>
+                    <Card 
+                      elevation={2}
+                      sx={{ 
+                        borderRadius: 2,
+                        transition: 'all 0.2s',
+                        '&:hover': { 
+                          transform: 'translateY(-3px)',
+                          boxShadow: '0 10px 20px rgba(0,0,0,0.12)',
+                        },
+                      }}
+                    >
+                      <CardContent>
+                        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                          <Typography variant="h6" component="div" sx={{ fontWeight: 'bold' }}>
+                            {location.name}
+                          </Typography>
+                          <Avatar sx={{ bgcolor: 'rgba(49, 146, 105, 0.85)', width: 36, height: 36 }}>
+                            <LocationOn sx={{ fontSize: 20 }} />
+                          </Avatar>
+                        </Box>
+                        <Typography variant="body2" color="text.secondary" sx={{ mb: 2, height: 40, overflow: 'hidden' }}>
+                          {location.address || t('noData')}
                         </Typography>
-                        <Avatar sx={{ bgcolor: '#319269', width: 32, height: 32 }}>
-                          <LocationOn sx={{ fontSize: 20 }} />
-                        </Avatar>
-                      </Box>
-                      <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
-                        {location.address || t('noData')}
+                        <Typography variant="body2" sx={{ fontWeight: 500, color: '#555' }}>
+                          {t('currentBalance')}:
+                        </Typography>
+                        <Typography variant="h5" sx={{ color: '#319269', fontWeight: 'bold' }}>
+                          {formatCurrency(getLocationBalance(location.id)).replace('$', '')} MAD
+                        </Typography>
+                      </CardContent>
+                      <CardActions sx={{ borderTop: '1px solid rgba(0,0,0,0.05)', justifyContent: 'flex-end' }}>
+                        <Button
+                          size="small"
+                          onClick={() => navigate(`/operations?location=${location.id}`)}
+                          sx={{ 
+                            color: '#319269',
+                            fontWeight: 500,
+                            '&:hover': { bgcolor: 'rgba(49, 146, 105, 0.1)' },
+                          }}
+                        >
+                          {t('operations')}
+                        </Button>
+                      </CardActions>
+                    </Card>
+                  </Grid>
+                ))}
+                
+                {userLocations.length === 0 && (
+                  <Grid item xs={12}>
+                    <Box 
+                      sx={{ 
+                        textAlign: 'center', 
+                        py: 4, 
+                        borderRadius: 2,
+                        bgcolor: 'rgba(0,0,0,0.02)',
+                      }}
+                    >
+                      <LocationOn sx={{ fontSize: 48, color: 'text.disabled', mb: 1 }} />
+                      <Typography variant="body1" color="text.secondary">
+                        {t('noData')}
                       </Typography>
-                      <Typography variant="body2" sx={{ fontWeight: 'bold' }}>
-                        {t('currentBalance')}:
-                      </Typography>
-                      <Typography variant="h5" sx={{ color: '#319269', fontWeight: 'bold' }}>
-                        {formatCurrency(getLocationBalance(location.id))}
-                      </Typography>
-                    </CardContent>
-                    <CardActions>
-                      <Button
-                        size="small"
-                        onClick={() => navigate(`/operations/${location.id}`)}
-                        sx={{ color: '#319269' }}
-                      >
-                        {t('operations')}
-                      </Button>
-                    </CardActions>
-                  </Card>
-                </Grid>
-              ))}
-              
-              {userLocations.length === 0 && (
-                <Grid item xs={12}>
-                  <Typography variant="body1" color="text.secondary" sx={{ textAlign: 'center' }}>
-                    {t('noData')}
-                  </Typography>
-                </Grid>
-              )}
-            </Grid>
+                    </Box>
+                  </Grid>
+                )}
+              </Grid>
+            </Box>
           </Paper>
         </Grid>
       </Grid>
