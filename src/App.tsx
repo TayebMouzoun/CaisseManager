@@ -19,7 +19,6 @@ import Locations from './pages/Locations/Locations';
 import Profile from './pages/Profile/Profile';
 import NotFound from './pages/NotFound/NotFound';
 import LocationsManagement from './pages/Admin/LocationsManagement';
-import UsersManagement from './pages/Admin/UsersManagement';
 import SourcesManagement from './pages/Admin/SourcesManagement';
 import ParametersManagement from './pages/Admin/ParametersManagement';
 import Parameters from './pages/Parameters/Parameters';
@@ -103,7 +102,6 @@ function App() {
             {user?.role === 'admin' && (
               <>
                 <Route path="/admin/locations" element={<LocationsManagement />} />
-                <Route path="/admin/users" element={<UsersManagement />} />
                 <Route path="/admin/sources" element={<SourcesManagement />} />
                 <Route path="/parameters" element={<Parameters />} />
               </>
