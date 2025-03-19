@@ -146,7 +146,7 @@ const Dashboard: React.FC = () => {
               p: 2.5,
               display: 'flex',
               flexDirection: 'column',
-              height: { xs: 160, sm: 160, md: 160 },
+              height: 140,
               borderRadius: 3,
               boxShadow: '0 6px 15px rgba(0,0,0,0.08)',
               position: 'relative',
@@ -163,35 +163,27 @@ const Dashboard: React.FC = () => {
               }
             }}
           >
-            <Box sx={{ position: 'relative', zIndex: 1 }}>
-              <Typography variant="subtitle1" color="text.secondary" gutterBottom>
-                {t('totalCash')}
-              </Typography>
-              <AttachMoney 
-                sx={{ 
-                  position: 'absolute', 
-                  right: -10, 
-                  top: -15, 
-                  fontSize: 100, 
-                  color: 'rgba(49, 146, 105, 0.1)',
-                  transform: 'rotate(15deg)',
-                }} 
-              />
-              <Typography 
-                variant="h5" 
-                component="div" 
-                sx={{ 
-                  mt: 'auto', 
-                  color: '#319269', 
-                  fontWeight: 'bold',
-                  fontSize: { xs: '1.5rem', sm: '1.6rem', md: '1.7rem' },
-                  whiteSpace: 'nowrap',
-                  overflow: 'hidden',
-                  textOverflow: 'ellipsis'
-                }}
-              >
-                {formatCurrency(totalCash).replace('$', 'MAD ')}
-              </Typography>
+            <Box sx={{ position: 'relative', zIndex: 1, height: '100%', display: 'flex', flexDirection: 'column' }}>
+              <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1 }}>
+                <Typography variant="subtitle2" color="text.secondary">
+                  {t('totalCash')}
+                </Typography>
+                <AttachMoney sx={{ color: '#319269', fontSize: 24 }} />
+              </Box>
+              <Box sx={{ flexGrow: 1, display: 'flex', alignItems: 'center' }}>
+                <Typography 
+                  variant="h6" 
+                  component="div" 
+                  sx={{ 
+                    color: '#319269', 
+                    fontWeight: 'bold',
+                    fontSize: '1.3rem',
+                    lineHeight: 1.2
+                  }}
+                >
+                  {formatCurrency(totalCash).replace('$', 'MAD ')}
+                </Typography>
+              </Box>
             </Box>
           </Paper>
         </Grid>
@@ -203,7 +195,7 @@ const Dashboard: React.FC = () => {
               p: 2.5,
               display: 'flex',
               flexDirection: 'column',
-              height: { xs: 160, sm: 160, md: 160 },
+              height: 140,
               borderRadius: 3,
               boxShadow: '0 6px 15px rgba(0,0,0,0.08)',
               position: 'relative',
@@ -220,35 +212,26 @@ const Dashboard: React.FC = () => {
               }
             }}
           >
-            <Box sx={{ position: 'relative', zIndex: 1, display: 'flex', flexDirection: 'column', height: '100%' }}>
-              <Typography variant="subtitle1" color="text.secondary" gutterBottom>
-                {t('todayOperations')}
-              </Typography>
-              <Box sx={{ display: 'flex', alignItems: 'center', mt: 'auto' }}>
+            <Box sx={{ position: 'relative', zIndex: 1, height: '100%', display: 'flex', flexDirection: 'column' }}>
+              <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1 }}>
+                <Typography variant="subtitle2" color="text.secondary">
+                  {t('todayOperations')}
+                </Typography>
+                <MonetizationOn sx={{ color: '#ffa000', fontSize: 24 }} />
+              </Box>
+              <Box sx={{ flexGrow: 1, display: 'flex', alignItems: 'center' }}>
                 <Typography 
-                  variant="h5" 
+                  variant="h6" 
                   component="div" 
                   sx={{ 
                     color: '#ffa000', 
                     fontWeight: 'bold',
-                    fontSize: { xs: '1.5rem', sm: '1.6rem', md: '1.7rem' }
+                    fontSize: '1.3rem',
+                    lineHeight: 1.2
                   }}
                 >
                   {todayOperations.length}
                 </Typography>
-                <Box sx={{ ml: 'auto' }}>
-                  <Box sx={{ 
-                    width: 70, 
-                    height: 70, 
-                    borderRadius: '50%', 
-                    display: 'flex', 
-                    alignItems: 'center', 
-                    justifyContent: 'center',
-                    bgcolor: 'rgba(255, 160, 0, 0.15)',
-                  }}>
-                    <MonetizationOn sx={{ fontSize: 40, color: '#ffa000' }} />
-                  </Box>
-                </Box>
               </Box>
             </Box>
           </Paper>
@@ -261,7 +244,7 @@ const Dashboard: React.FC = () => {
               p: 2.5,
               display: 'flex',
               flexDirection: 'column',
-              height: { xs: 160, sm: 160, md: 160 },
+              height: 140,
               borderRadius: 3,
               boxShadow: '0 6px 15px rgba(0,0,0,0.08)',
               position: 'relative',
@@ -278,39 +261,26 @@ const Dashboard: React.FC = () => {
               }
             }}
           >
-            <Box sx={{ position: 'relative', zIndex: 1, display: 'flex', flexDirection: 'column', height: '100%' }}>
-              <Typography variant="subtitle1" color="text.secondary" gutterBottom>
-                {t('monthlyRevenue')}
-              </Typography>
-              <Box sx={{ display: 'flex', alignItems: 'center', mt: 'auto' }}>
+            <Box sx={{ position: 'relative', zIndex: 1, height: '100%', display: 'flex', flexDirection: 'column' }}>
+              <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1 }}>
+                <Typography variant="subtitle2" color="text.secondary">
+                  {t('monthlyRevenue')}
+                </Typography>
+                <TrendingUp sx={{ color: '#388e3c', fontSize: 24 }} />
+              </Box>
+              <Box sx={{ flexGrow: 1, display: 'flex', alignItems: 'center' }}>
                 <Typography 
-                  variant="h5" 
+                  variant="h6" 
                   component="div" 
                   sx={{ 
                     color: '#388e3c', 
                     fontWeight: 'bold',
-                    fontSize: { xs: '1.5rem', sm: '1.6rem', md: '1.7rem' },
-                    whiteSpace: 'nowrap',
-                    overflow: 'hidden',
-                    textOverflow: 'ellipsis',
-                    maxWidth: '70%'
+                    fontSize: '1.3rem',
+                    lineHeight: 1.2
                   }}
                 >
                   {formatCurrency(monthlyRevenue).replace('$', 'MAD ')}
                 </Typography>
-                <Box sx={{ ml: 'auto' }}>
-                  <Box sx={{ 
-                    width: 70, 
-                    height: 70, 
-                    borderRadius: '50%', 
-                    display: 'flex', 
-                    alignItems: 'center', 
-                    justifyContent: 'center',
-                    bgcolor: 'rgba(56, 142, 60, 0.15)',
-                  }}>
-                    <TrendingUp sx={{ fontSize: 40, color: '#388e3c' }} />
-                  </Box>
-                </Box>
               </Box>
             </Box>
           </Paper>
@@ -323,7 +293,7 @@ const Dashboard: React.FC = () => {
               p: 2.5,
               display: 'flex',
               flexDirection: 'column',
-              height: { xs: 160, sm: 160, md: 160 },
+              height: 140,
               borderRadius: 3,
               boxShadow: '0 6px 15px rgba(0,0,0,0.08)',
               position: 'relative',
@@ -340,35 +310,26 @@ const Dashboard: React.FC = () => {
               }
             }}
           >
-            <Box sx={{ position: 'relative', zIndex: 1, display: 'flex', flexDirection: 'column', height: '100%' }}>
-              <Typography variant="subtitle1" color="text.secondary" gutterBottom>
-                {t('activeUsers')}
-              </Typography>
-              <Box sx={{ display: 'flex', alignItems: 'center', mt: 'auto' }}>
+            <Box sx={{ position: 'relative', zIndex: 1, height: '100%', display: 'flex', flexDirection: 'column' }}>
+              <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1 }}>
+                <Typography variant="subtitle2" color="text.secondary">
+                  {t('activeUsers')}
+                </Typography>
+                <Group sx={{ color: '#1976d2', fontSize: 24 }} />
+              </Box>
+              <Box sx={{ flexGrow: 1, display: 'flex', alignItems: 'center' }}>
                 <Typography 
-                  variant="h5" 
+                  variant="h6" 
                   component="div" 
                   sx={{ 
                     color: '#1976d2', 
                     fontWeight: 'bold',
-                    fontSize: { xs: '1.5rem', sm: '1.6rem', md: '1.7rem' }
+                    fontSize: '1.3rem',
+                    lineHeight: 1.2
                   }}
                 >
                   {users.length}
                 </Typography>
-                <Box sx={{ ml: 'auto' }}>
-                  <Box sx={{ 
-                    width: 70, 
-                    height: 70, 
-                    borderRadius: '50%', 
-                    display: 'flex', 
-                    alignItems: 'center', 
-                    justifyContent: 'center',
-                    bgcolor: 'rgba(25, 118, 210, 0.15)',
-                  }}>
-                    <Group sx={{ fontSize: 40, color: '#1976d2' }} />
-                  </Box>
-                </Box>
               </Box>
             </Box>
           </Paper>
