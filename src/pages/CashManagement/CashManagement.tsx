@@ -62,7 +62,7 @@ const CashManagement: React.FC = () => {
   
   // Filtrer les sources en fonction du type d'opération
   const sourceOptions = sources
-    .filter(s => s.type === activeTab)
+    .filter(s => s.type === (activeTab === 'return' ? 'out' : activeTab))
     .map(s => ({
       value: s.name,
       label: s.name,
@@ -85,8 +85,12 @@ const CashManagement: React.FC = () => {
   
   // Get a list of all out operations for the return operation selection
   const cashOutOperations = useSelector((state: RootState) => 
-    state.cash.operations.filter(op => op.type === 'out')
-      .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
+    state.cash.operations.filter(op => 
+      op.type === 'out' && 
+      // Only filter by source if we're in return mode and a source is selected
+      (activeTab === 'return' && source ? op.source === source : true)
+    )
+    .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
   );
   
   const handlePrint = useReactToPrint({
@@ -165,6 +169,27 @@ const CashManagement: React.FC = () => {
     setErrors({});
     setSuccess(false);
     setRelatedOperationId('');
+  };
+  
+  // Add effect to reset relatedOperationId when source changes in return mode
+  useEffect(() => {
+    if (activeTab === 'return') {
+      setRelatedOperationId('');
+    }
+  }, [source, activeTab]);
+  
+  // Create a function to handle related operation selection
+  const handleRelatedOperationChange = (operationId: string) => {
+    setRelatedOperationId(operationId);
+    
+    // If an operation is selected, suggest the same amount
+    if (operationId) {
+      const selectedOperation = cashOutOperations.find(op => op.id === operationId);
+      if (selectedOperation && !amount) {
+        // Suggest the original amount by default
+        setAmount(selectedOperation.amount.toString());
+      }
+    }
   };
   
   return (
@@ -456,7 +481,7 @@ const CashManagement: React.FC = () => {
                           labelId="related-operation-label"
                           value={relatedOperationId}
                           label={t('relatedCashOutOperation')}
-                          onChange={(e) => setRelatedOperationId(e.target.value as string)}
+                          onChange={(e) => handleRelatedOperationChange(e.target.value as string)}
                         >
                           <MenuItem value="">{t('select')}</MenuItem>
                           {cashOutOperations.map((operation) => (
@@ -469,6 +494,14 @@ const CashManagement: React.FC = () => {
                           <FormHelperText>{errors.relatedOperationId}</FormHelperText>
                         )}
                       </FormControl>
+                    </Grid>
+                  )}
+                  
+                  {activeTab === 'return' && source && (
+                    <Grid item xs={12}>
+                      <Typography variant="caption" sx={{ color: '#ffa000', fontStyle: 'italic', mt: 1, display: 'block' }}>
+                        {t('returnSourceHelp', 'The list of operations has been filtered to show only cash out operations with this source')}
+                      </Typography>
                     </Grid>
                   )}
                   
@@ -612,14 +645,43 @@ const CashManagement: React.FC = () => {
                   )}
                   
                   {currentOperation.type === 'return' && currentOperation.relatedOperationId && (
-                    <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
-                      <Typography variant="body2" color="text.secondary">
-                        {t('relatedToVoucher')}:
-                      </Typography>
-                      <Typography variant="body2" sx={{ fontWeight: 'bold' }}>
-                        {operations.find((op: CashOperation) => op.id === currentOperation.relatedOperationId)?.voucherNumber || t('notFound')}
-                      </Typography>
-                    </Box>
+                    <>
+                      <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
+                        <Typography variant="body2" color="text.secondary">
+                          {t('relatedToVoucher')}:
+                        </Typography>
+                        <Typography variant="body2" sx={{ fontWeight: 'bold' }}>
+                          {operations.find((op: CashOperation) => op.id === currentOperation.relatedOperationId)?.voucherNumber || t('notFound')}
+                        </Typography>
+                      </Box>
+                      
+                      {(() => {
+                        const relatedOp = operations.find((op: CashOperation) => op.id === currentOperation.relatedOperationId);
+                        if (relatedOp) {
+                          return (
+                            <>
+                              <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
+                                <Typography variant="body2" color="text.secondary">
+                                  {t('originalAmount')}:
+                                </Typography>
+                                <Typography variant="body2" sx={{ fontWeight: 'bold', color: '#d32f2f' }}>
+                                  {formatCurrency(relatedOp.amount)}
+                                </Typography>
+                              </Box>
+                              <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
+                                <Typography variant="body2" color="text.secondary">
+                                  {t('returnRatio')}:
+                                </Typography>
+                                <Typography variant="body2" sx={{ fontWeight: 'bold' }}>
+                                  {Math.round((currentOperation.amount / relatedOp.amount) * 100)}%
+                                </Typography>
+                              </Box>
+                            </>
+                          );
+                        }
+                        return null;
+                      })()}
+                    </>
                   )}
                 </Stack>
               </Box>
