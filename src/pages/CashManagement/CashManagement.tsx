@@ -537,12 +537,7 @@ const CashManagement: React.FC = () => {
                         borderRadius: 2,
                       }}
                     >
-                      {activeTab === 'in' 
-                        ? t('addCashIn') 
-                        : activeTab === 'out' 
-                        ? t('addCashOut')
-                        : t('addCashReturn')
-                      }
+                      Valider
                     </Button>
                   </Grid>
                 </Grid>
