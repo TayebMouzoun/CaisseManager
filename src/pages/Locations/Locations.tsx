@@ -173,8 +173,18 @@ const Locations: React.FC = () => {
   
   return (
     <Box sx={{ p: 2 }}>
-      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 4 }}>
-        <Typography variant="h4" sx={{ color: '#319269' }}>
+      <Box sx={{ 
+        display: 'flex', 
+        justifyContent: 'space-between', 
+        alignItems: 'center', 
+        mb: 4,
+        flexDirection: { xs: 'column', sm: 'row' },
+        gap: { xs: 2, sm: 0 }
+      }}>
+        <Typography variant="h4" sx={{ 
+          color: '#319269',
+          fontSize: { xs: '1.5rem', sm: '2rem', md: '2.125rem' }
+        }}>
           {t('locations')}
         </Typography>
         
@@ -186,7 +196,8 @@ const Locations: React.FC = () => {
             bgcolor: '#319269',
             '&:hover': {
               bgcolor: '#2a7d58'
-            }
+            },
+            width: { xs: '100%', sm: 'auto' }
           }}
         >
           {t('addLocation')}
@@ -194,19 +205,19 @@ const Locations: React.FC = () => {
       </Box>
       
       {locations.length === 0 ? (
-        <Paper sx={{ p: 4, borderRadius: 2, textAlign: 'center' }}>
-          <Business sx={{ fontSize: 60, color: '#ccc', mb: 2 }} />
-          <Typography variant="h6" color="textSecondary" gutterBottom>
+        <Paper sx={{ p: { xs: 2, sm: 4 }, borderRadius: 2, textAlign: 'center' }}>
+          <Business sx={{ fontSize: { xs: 40, sm: 60 }, color: '#ccc', mb: 2 }} />
+          <Typography variant="h6" color="textSecondary" gutterBottom sx={{ fontSize: { xs: '1rem', sm: '1.25rem' } }}>
             {t('noLocationsYet')}
           </Typography>
-          <Typography variant="body2" color="textSecondary" paragraph>
+          <Typography variant="body2" color="textSecondary" paragraph sx={{ fontSize: { xs: '0.75rem', sm: '0.875rem' } }}>
             {t('addFirstLocation')}
           </Typography>
           <Button 
             variant="outlined" 
             startIcon={<Add />} 
             onClick={handleClickOpen}
-            sx={{ mt: 2 }}
+            sx={{ mt: 2, width: { xs: '100%', sm: 'auto' } }}
           >
             {t('addLocation')}
           </Button>
@@ -222,12 +233,24 @@ const Locations: React.FC = () => {
                 initialState={{
                   pagination: {
                     paginationModel: { pageSize: 10 }
-                  }
+                  },
+                  columns: {
+                    columnVisibilityModel: {
+                      id: false,
+                      createdAt: false
+                    },
+                  },
                 }}
                 sx={{
                   '& .MuiDataGrid-cell:focus-within, & .MuiDataGrid-cell:focus': {
                     outline: 'none',
                   },
+                  '& .MuiDataGrid-virtualScroller': {
+                    overflowX: 'auto',
+                  },
+                  '& .MuiDataGrid-main': {
+                    width: '100%',
+                  }
                 }}
               />
             </Paper>
@@ -237,7 +260,7 @@ const Locations: React.FC = () => {
             <Typography variant="h5" sx={{ mt: 4, mb: 2, color: '#319269' }}>
               {t('locationCards')}
             </Typography>
-            <Grid container spacing={3}>
+            <Grid container spacing={2}>
               {locations.map((location) => (
                 <Grid item xs={12} sm={6} md={4} key={location.id}>
                   <Card sx={{ 
@@ -249,33 +272,34 @@ const Locations: React.FC = () => {
                       boxShadow: '0 8px 16px rgba(0,0,0,0.1)',
                     }
                   }}>
-                    <CardContent>
+                    <CardContent sx={{ p: { xs: 2, sm: 3 } }}>
                       <Typography variant="h6" gutterBottom sx={{ 
                         display: 'flex', 
                         alignItems: 'center',
-                        color: '#319269'
+                        color: '#319269',
+                        fontSize: { xs: '1rem', sm: '1.25rem' }
                       }}>
-                        <Business sx={{ mr: 1 }} />
+                        <Business sx={{ mr: 1, fontSize: { xs: 20, sm: 24 } }} />
                         {location.name}
                       </Typography>
                       
                       <Divider sx={{ my: 1.5 }} />
                       
                       <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
-                        <LocationOn sx={{ color: '#666', mr: 1, fontSize: 20 }} />
-                        <Typography variant="body2" color="textSecondary">
+                        <LocationOn sx={{ color: '#666', mr: 1, fontSize: { xs: 16, sm: 20 } }} />
+                        <Typography variant="body2" color="textSecondary" sx={{ fontSize: { xs: '0.8rem', sm: '0.875rem' } }}>
                           {location.address || t('noAddress')}
                         </Typography>
                       </Box>
                       
                       <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                        <Person sx={{ color: '#666', mr: 1, fontSize: 20 }} />
-                        <Typography variant="body2" color="textSecondary">
+                        <Person sx={{ color: '#666', mr: 1, fontSize: { xs: 16, sm: 20 } }} />
+                        <Typography variant="body2" color="textSecondary" sx={{ fontSize: { xs: '0.8rem', sm: '0.875rem' } }}>
                           {location.manager || t('noManager')}
                         </Typography>
                       </Box>
                     </CardContent>
-                    <CardActions sx={{ justifyContent: 'flex-end', p: 1.5 }}>
+                    <CardActions sx={{ justifyContent: 'flex-end', p: { xs: 1, sm: 1.5 } }}>
                       <IconButton 
                         size="small" 
                         onClick={() => handleEdit(location)}
