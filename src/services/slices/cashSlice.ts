@@ -1,4 +1,4 @@
-import { createSlice, PayloadAction } from '@reduxjs/toolkit';
+import { createSlice, PayloadAction, current } from '@reduxjs/toolkit';
 import { v4 as uuidv4 } from 'uuid';
 
 export type OperationType = 'in' | 'out' | 'return';
@@ -32,6 +32,12 @@ interface CashState {
   loading: boolean;
   error: string | null;
   currentOperation: CashOperation | null;
+  nextId: number; // Counter for sequential IDs
+  nextVoucherNumbers: {
+    in: number; // Counter for IN voucher numbers
+    out: number; // Counter for OUT voucher numbers
+    return: number; // Counter for RETURN voucher numbers
+  };
 }
 
 const initialState: CashState = {
@@ -40,6 +46,12 @@ const initialState: CashState = {
   loading: false,
   error: null,
   currentOperation: null,
+  nextId: 1, // Start IDs from 1
+  nextVoucherNumbers: {
+    in: 1, // Start voucher numbers from 1
+    out: 1,
+    return: 1
+  }
 };
 
 const cashSlice = createSlice({
@@ -51,8 +63,53 @@ const cashSlice = createSlice({
       state.error = null;
     },
     fetchOperationsSuccess: (state, action: PayloadAction<CashOperation[]>) => {
+      // Keep existing state values for nextId and nextVoucherNumbers if they exist
+      const currentNextId = state.nextId || 1;
+      const currentNextVoucherNumbers = state.nextVoucherNumbers || { in: 1, out: 1, return: 1 };
+      
+      // Update state
       state.loading = false;
       state.operations = action.payload;
+      
+      // Ensure nextId and nextVoucherNumbers are set
+      state.nextId = currentNextId;
+      state.nextVoucherNumbers = currentNextVoucherNumbers;
+      
+      // Update the nextId based on the highest id found in operations
+      if (action.payload.length > 0) {
+        const highestId = Math.max(...action.payload.map(op => parseInt(op.id)));
+        state.nextId = highestId + 1;
+      }
+      
+      // Update next voucher numbers based on highest numbers in each category
+      const inOperations = action.payload.filter(op => op.type === 'in');
+      const outOperations = action.payload.filter(op => op.type === 'out');
+      const returnOperations = action.payload.filter(op => op.type === 'return');
+      
+      if (inOperations.length > 0) {
+        // Extract numbers from voucher numbers like "ENTREE-0001"
+        const inNumbers = inOperations.map(op => {
+          const match = op.voucherNumber.match(/ENTREE-(\d+)/);
+          return match ? parseInt(match[1]) : 0;
+        });
+        state.nextVoucherNumbers.in = Math.max(...inNumbers) + 1;
+      }
+      
+      if (outOperations.length > 0) {
+        const outNumbers = outOperations.map(op => {
+          const match = op.voucherNumber.match(/SORTIE-(\d+)/);
+          return match ? parseInt(match[1]) : 0;
+        });
+        state.nextVoucherNumbers.out = Math.max(...outNumbers) + 1;
+      }
+      
+      if (returnOperations.length > 0) {
+        const returnNumbers = returnOperations.map(op => {
+          const match = op.voucherNumber.match(/RETOUR-(\d+)/);
+          return match ? parseInt(match[1]) : 0;
+        });
+        state.nextVoucherNumbers.return = Math.max(...returnNumbers) + 1;
+      }
     },
     fetchOperationsFailure: (state, action: PayloadAction<string>) => {
       state.loading = false;
@@ -64,10 +121,16 @@ const cashSlice = createSlice({
     addOperation: (state, action: PayloadAction<Omit<CashOperation, 'id' | 'voucherNumber'>>) => {
       const operation = {
         ...action.payload,
-        id: uuidv4(),
-        voucherNumber: generateVoucherNumber(action.payload.type),
+        id: state.nextId.toString(), // Use the next ID from the counter
+        voucherNumber: generateVoucherNumber(action.payload.type, state), // Pass state to generate sequential voucher number
         isSigned: false,
       };
+      
+      // Increment ID counter for next operation
+      state.nextId += 1;
+      
+      // Increment voucher number counter for the specific operation type
+      state.nextVoucherNumbers[operation.type] += 1;
       
       state.operations.push(operation);
       
@@ -110,16 +173,33 @@ const cashSlice = createSlice({
     clearOperationState: (state) => {
       state.currentOperation = null;
       state.error = null;
+      // Ensure nextId and nextVoucherNumbers are preserved
     }
   }
 });
 
 // Helper functions
-function generateVoucherNumber(type: OperationType): string {
-  const prefix = type === 'in' ? 'IN' : type === 'out' ? 'OUT' : 'RET';
-  const timestamp = Date.now();
-  const random = Math.floor(Math.random() * 1000).toString().padStart(3, '0');
-  return `${prefix}-${timestamp}-${random}`;
+function generateVoucherNumber(type: OperationType, state: CashState): string {
+  let prefix: string;
+  let nextNumber: number;
+  
+  switch (type) {
+    case 'in':
+      prefix = 'ENTREE';
+      nextNumber = state.nextVoucherNumbers.in;
+      break;
+    case 'out':
+      prefix = 'SORTIE';
+      nextNumber = state.nextVoucherNumbers.out;
+      break;
+    case 'return':
+      prefix = 'RETOUR';
+      nextNumber = state.nextVoucherNumbers.return;
+      break;
+  }
+  
+  // Format: PREFIX-NUMBER (padded to at least 4 digits)
+  return `${prefix}-${nextNumber.toString().padStart(4, '0')}`;
 }
 
 function getBalanceChange(type: OperationType, amount: number): number {
