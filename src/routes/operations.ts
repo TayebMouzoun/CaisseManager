@@ -5,6 +5,19 @@ import { AuthRequest } from '../middleware/auth';
 
 const router = express.Router();
 
+type OperationType = 'income' | 'expense';
+
+interface OperationStats {
+    income: {
+        total: number;
+        count: number;
+    };
+    expense: {
+        total: number;
+        count: number;
+    };
+}
+
 // Get all operations with filters
 router.get('/', protect, async (req: AuthRequest, res) => {
     try {
@@ -184,6 +197,31 @@ router.get('/summary/stats', protect, async (req: AuthRequest, res) => {
         res.json(stats);
     } catch (error) {
         res.status(500).json({ message: 'Error fetching summary' });
+    }
+});
+
+// Get operation statistics
+router.get('/stats', protect, async (req: AuthRequest, res) => {
+    try {
+        const operations = await Operation.find({ createdBy: req.user._id });
+        
+        const stats: OperationStats = {
+            income: { total: 0, count: 0 },
+            expense: { total: 0, count: 0 }
+        };
+
+        operations.forEach(operation => {
+            const type = operation.type as OperationType;
+            if (type === 'income' || type === 'expense') {
+                stats[type].total += operation.amount;
+                stats[type].count += 1;
+            }
+        });
+
+        res.json(stats);
+    } catch (error) {
+        console.error('Error getting operation stats:', error);
+        res.status(500).json({ message: 'Error retrieving operation statistics' });
     }
 });
 
