@@ -18,6 +18,12 @@ interface OperationStats {
     };
 }
 
+interface SummaryItem {
+    _id: OperationType;
+    total: number;
+    count: number;
+}
+
 // Get all operations with filters
 router.get('/', protect, async (req: AuthRequest, res) => {
     try {
@@ -180,18 +186,20 @@ router.get('/summary/stats', protect, async (req: AuthRequest, res) => {
                     count: { $sum: 1 }
                 }
             }
-        ]);
+        ]) as SummaryItem[];
 
-        const stats = {
+        const stats: OperationStats = {
             income: { total: 0, count: 0 },
             expense: { total: 0, count: 0 }
         };
 
         summary.forEach((item) => {
-            stats[item._id] = {
-                total: item.total,
-                count: item.count
-            };
+            if (item._id === 'income' || item._id === 'expense') {
+                stats[item._id] = {
+                    total: item.total,
+                    count: item.count
+                };
+            }
         });
 
         res.json(stats);
