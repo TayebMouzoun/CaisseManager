@@ -3,6 +3,7 @@ import cors from 'cors';
 import path from 'path';
 import { connectDB } from './config/database';
 import dotenv from 'dotenv';
+import authRoutes from './routes/auth';
 
 dotenv.config();
 
@@ -21,6 +22,9 @@ app.use((req, res, next) => {
 
 // Connect to MongoDB
 connectDB();
+
+// Routes
+app.use('/api/auth', authRoutes);
 
 // API routes
 app.get('/api/health', (req, res) => {
