@@ -1,12 +1,16 @@
 {
   "extends": "./tsconfig.json",
   "compilerOptions": {
-    "outDir": "build",
+    "outDir": "dist",
     "module": "commonjs",
     "target": "es2017",
     "isolatedModules": false,
-    "noEmit": false
+    "noEmit": false,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
+    "resolveJsonModule": true
   },
   "include": ["src/server.ts", "src/config/**/*"],
-  "exclude": ["node_modules", "build", "scripts", "src/components", "src/pages"]
+  "exclude": ["node_modules", "build", "dist", "scripts", "src/components", "src/pages"]
 } 
