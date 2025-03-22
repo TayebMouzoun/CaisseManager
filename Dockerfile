@@ -1,5 +1,5 @@
-# Build stage
-FROM node:18-alpine AS builder
+# Use Node.js 18 as the base image
+FROM node:18-alpine
 
 # Set working directory
 WORKDIR /app
@@ -7,36 +7,19 @@ WORKDIR /app
 # Copy package files
 COPY package*.json ./
 
-# Install dependencies with increased memory limit and clean npm cache
-RUN npm cache clean --force && \
-    NODE_OPTIONS="--max_old_space_size=2048" npm install --no-audit --no-fund
+# Install dependencies with minimal memory usage
+RUN apk add --no-cache python3 make g++ && \
+    npm install --only=production --legacy-peer-deps && \
+    npm install -D typescript @types/node @types/express @types/cors @types/bcryptjs @types/jsonwebtoken && \
+    npm cache clean --force
 
 # Copy source code
 COPY . .
 
-# Set environment variable for React build
-ENV NODE_ENV=production
-ENV CI=true
-
-# Create production builds with increased memory limit
-RUN NODE_OPTIONS="--max_old_space_size=2048" npm run build:server && \
-    NODE_OPTIONS="--max_old_space_size=2048" npm run build:client
-
-# Production stage
-FROM node:18-alpine
-
-WORKDIR /app
-
-# Copy package files
-COPY package*.json ./
-
-# Install production dependencies with increased memory limit
-RUN npm cache clean --force && \
-    NODE_OPTIONS="--max_old_space_size=2048" npm install --production --no-audit --no-fund
-
-# Copy built files
-COPY --from=builder /app/build ./build
-COPY --from=builder /app/dist ./dist
+# Build the application
+RUN npm run build:server && \
+    npm run build:client && \
+    npm prune --production
 
 # Set environment variables
 ENV NODE_ENV=production

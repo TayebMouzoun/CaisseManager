@@ -34,6 +34,7 @@
     "@types/cors": "^2.8.17",
     "@types/express": "^4.17.21",
     "@types/jsonwebtoken": "^9.0.5",
+    "@types/node": "^16.18.60",
     "@types/react": "^18.2.35",
     "@types/react-dom": "^18.2.14",
     "@types/uuid": "^9.0.6",
@@ -44,7 +45,7 @@
   "scripts": {
     "start": "node dist/server.js",
     "build": "npm run build:server && npm run build:client",
-    "build:client": "DISABLE_ESLINT_PLUGIN=true CI=true react-scripts build",
+    "build:client": "CI=true GENERATE_SOURCEMAP=false react-scripts build",
     "build:server": "tsc -p tsconfig.build.json",
     "test": "react-scripts test",
     "eject": "react-scripts eject",
