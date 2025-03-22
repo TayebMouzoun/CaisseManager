@@ -44,12 +44,13 @@
   "scripts": {
     "start": "node dist/server.js",
     "build": "npm run build:server && npm run build:client",
-    "build:client": "DISABLE_ESLINT_PLUGIN=true react-scripts build",
+    "build:client": "DISABLE_ESLINT_PLUGIN=true CI=true react-scripts build",
     "build:server": "tsc -p tsconfig.build.json",
     "test": "react-scripts test",
     "eject": "react-scripts eject",
     "server": "ts-node src/server.ts",
-    "dev": "concurrently \"npm run server\" \"react-scripts start\""
+    "dev": "concurrently \"npm run server\" \"react-scripts start\"",
+    "postinstall": "npm run build"
   },
   "eslintConfig": {
     "extends": [

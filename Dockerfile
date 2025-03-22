@@ -7,8 +7,9 @@ WORKDIR /app
 # Copy package files
 COPY package*.json ./
 
-# Install ALL dependencies (including devDependencies)
-RUN npm install
+# Install dependencies with increased memory limit and clean npm cache
+RUN npm cache clean --force && \
+    NODE_OPTIONS="--max_old_space_size=2048" npm install --no-audit --no-fund
 
 # Copy source code
 COPY . .
@@ -17,9 +18,9 @@ COPY . .
 ENV NODE_ENV=production
 ENV CI=true
 
-# Create production builds
-RUN npm run build:server
-RUN npm run build:client
+# Create production builds with increased memory limit
+RUN NODE_OPTIONS="--max_old_space_size=2048" npm run build:server && \
+    NODE_OPTIONS="--max_old_space_size=2048" npm run build:client
 
 # Production stage
 FROM node:18-alpine
@@ -29,8 +30,9 @@ WORKDIR /app
 # Copy package files
 COPY package*.json ./
 
-# Install production dependencies only
-RUN npm ci --only=production
+# Install production dependencies with increased memory limit
+RUN npm cache clean --force && \
+    NODE_OPTIONS="--max_old_space_size=2048" npm install --production --no-audit --no-fund
 
 # Copy built files
 COPY --from=builder /app/build ./build
