@@ -9,7 +9,6 @@
     "@mui/material": "^5.14.17",
     "@mui/x-data-grid": "^6.18.0",
     "@reduxjs/toolkit": "^1.9.7",
-    "@types/node": "^16.18.60",
     "bcryptjs": "^2.4.3",
     "cors": "^2.8.5",
     "dotenv": "^16.3.1",
@@ -25,7 +24,6 @@
     "react-redux": "^8.1.3",
     "react-router-dom": "^6.18.0",
     "react-to-print": "^2.14.15",
-    "typescript": "^4.9.5",
     "uuid": "^9.0.1",
     "yup": "^1.3.2"
   },
@@ -40,7 +38,8 @@
     "@types/uuid": "^9.0.6",
     "concurrently": "^9.1.2",
     "react-scripts": "5.0.1",
-    "ts-node": "^10.9.2"
+    "ts-node": "^10.9.2",
+    "typescript": "^4.9.5"
   },
   "scripts": {
     "start": "node dist/server.js",
@@ -50,8 +49,7 @@
     "test": "react-scripts test",
     "eject": "react-scripts eject",
     "server": "ts-node src/server.ts",
-    "dev": "concurrently \"npm run server\" \"react-scripts start\"",
-    "postinstall": "npm run build"
+    "dev": "concurrently \"npm run server\" \"react-scripts start\""
   },
   "eslintConfig": {
     "extends": [
