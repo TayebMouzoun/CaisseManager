@@ -10,18 +10,23 @@ export const connectDB = async () => {
         console.log('Attempting to connect to MongoDB...');
         console.log('MongoDB URI:', MONGODB_URI.replace(/\/\/[^:]+:[^@]+@/, '//<credentials>@')); // Hide credentials in logs
         
-        await mongoose.connect(MONGODB_URI);
+        const conn = await mongoose.connect(MONGODB_URI);
         
         console.log('MongoDB connected successfully');
-        console.log('Connected to database:', mongoose.connection.name);
-        console.log('Collections:', (await mongoose.connection.db.listCollections().toArray()).map(col => col.name));
+        console.log('Connected to database:', conn.connection.name);
+
+        // Only try to list collections if we have a connection
+        if (conn.connection.db) {
+            const collections = await conn.connection.db.listCollections().toArray();
+            console.log('Collections:', collections.map(col => col.name));
+        }
         
         // Set up event listeners
-        mongoose.connection.on('error', err => {
+        conn.connection.on('error', err => {
             console.error('MongoDB connection error:', err);
         });
 
-        mongoose.connection.on('disconnected', () => {
+        conn.connection.on('disconnected', () => {
             console.log('MongoDB disconnected');
         });
 

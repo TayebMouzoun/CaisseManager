@@ -7,15 +7,19 @@ WORKDIR /app
 # Copy package files
 COPY package*.json ./
 
-# Install dependencies
+# Install ALL dependencies (including devDependencies)
 RUN npm install
 
 # Copy source code
 COPY . .
 
-# Create production build
-RUN npm run build:client
+# Set environment variable for React build
+ENV NODE_ENV=production
+ENV CI=true
+
+# Create production builds
 RUN npm run build:server
+RUN npm run build:client
 
 # Production stage
 FROM node:18-alpine
@@ -31,7 +35,10 @@ RUN npm ci --only=production
 # Copy built files
 COPY --from=builder /app/build ./build
 COPY --from=builder /app/dist ./dist
-COPY .env ./
+
+# Set environment variables
+ENV NODE_ENV=production
+ENV PORT=5000
 
 # Expose port
 EXPOSE 5000
