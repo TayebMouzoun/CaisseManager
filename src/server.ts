@@ -4,6 +4,8 @@ import path from 'path';
 import { connectDB } from './config/database';
 import dotenv from 'dotenv';
 import authRoutes from './routes/auth';
+import locationRoutes from './routes/locations';
+import operationRoutes from './routes/operations';
 
 dotenv.config();
 
@@ -25,8 +27,10 @@ connectDB();
 
 // Routes
 app.use('/api/auth', authRoutes);
+app.use('/api/locations', locationRoutes);
+app.use('/api/operations', operationRoutes);
 
-// API routes
+// API health check
 app.get('/api/health', (req, res) => {
     res.json({ 
         status: 'ok',
