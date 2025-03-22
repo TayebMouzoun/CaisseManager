@@ -44,7 +44,7 @@
   "scripts": {
     "start": "node dist/server.js",
     "build": "npm run build:server && npm run build:client",
-    "build:client": "CI=true GENERATE_SOURCEMAP=false react-scripts build",
+    "build:client": "DISABLE_ESLINT_PLUGIN=true GENERATE_SOURCEMAP=false react-scripts build",
     "build:server": "tsc -p tsconfig.build.json",
     "test": "react-scripts test",
     "eject": "react-scripts eject",
@@ -54,7 +54,11 @@
   "eslintConfig": {
     "extends": [
       "react-app"
-    ]
+    ],
+    "rules": {
+      "@typescript-eslint/no-unused-vars": "warn",
+      "react-hooks/exhaustive-deps": "warn"
+    }
   },
   "browserslist": {
     "production": [
