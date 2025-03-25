@@ -24,6 +24,12 @@ import {
   Card,
   CardContent,
 } from '@mui/material';
+import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
+import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
+import { DateTimePicker } from '@mui/x-date-pickers/DateTimePicker';
+import { DateTimeValidationError } from '@mui/x-date-pickers/models';
+import { DatePicker } from '@mui/x-date-pickers/DatePicker';
+import { MuiPickersAdapter } from '@mui/x-date-pickers/models';
 import {
   AttachMoney,
   AddCircleOutline,
@@ -32,6 +38,9 @@ import {
   Check,
   Print,
   Person,
+  Edit,
+  Save,
+  Cancel,
 } from '@mui/icons-material';
 import { addOperation, CashOperation, OperationType } from '../../services/slices/cashSlice';
 import { RootState } from '../../services/store';
@@ -59,6 +68,9 @@ const CashManagement: React.FC = () => {
   const [success, setSuccess] = useState<boolean>(false);
   const [voucherRef, setVoucherRef] = useState<React.RefObject<HTMLDivElement>>(React.createRef());
   const [relatedOperationId, setRelatedOperationId] = useState<string>('');
+  const [operationDate, setOperationDate] = useState<Date | null>(new Date());
+  const [isEditingDate, setIsEditingDate] = useState(false);
+  const [editedDate, setEditedDate] = useState<Date | null>(null);
   
   // Filtrer les sources en fonction du type d'opération
   const sourceOptions = sources
@@ -125,6 +137,10 @@ const CashManagement: React.FC = () => {
       newErrors.locationId = t('required');
     }
     
+    if (!operationDate) {
+      newErrors.operationDate = t('required');
+    }
+    
     if (activeTab === 'return' && !relatedOperationId) {
       newErrors.relatedOperationId = t('required');
     }
@@ -147,7 +163,7 @@ const CashManagement: React.FC = () => {
       source,
       personInCharge,
       observation,
-      date: new Date().toISOString(),
+      date: operationDate?.toISOString() || new Date().toISOString(),
       createdBy: user?.id || '',
       locationId,
       isSigned: false,
@@ -169,6 +185,7 @@ const CashManagement: React.FC = () => {
     setErrors({});
     setSuccess(false);
     setRelatedOperationId('');
+    setOperationDate(new Date());
   };
   
   // Add effect to reset relatedOperationId when source changes in return mode
@@ -189,6 +206,16 @@ const CashManagement: React.FC = () => {
         // Suggest the original amount by default
         setAmount(selectedOperation.amount.toString());
       }
+    }
+  };
+  
+  // Add this function to handle date updates
+  const handleDateUpdate = () => {
+    if (editedDate && currentOperation) {
+      // Here you would typically dispatch an action to update the operation date
+      // For now, we'll just update the local state
+      setIsEditingDate(false);
+      setOperationDate(editedDate);
     }
   };
   
@@ -251,10 +278,63 @@ const CashManagement: React.FC = () => {
                   : activeTab === 'out' 
                   ? 'rgba(211, 47, 47, 0.05)'
                   : 'rgba(255, 160, 0, 0.05)',
-                p: 2,
-                borderRadius: 1
+                p: 3,
+                borderRadius: 2
               }}>
                 <Grid container spacing={2}>
+                  <Grid item xs={12}>
+                    <LocalizationProvider dateAdapter={AdapterDateFns}>
+                      <DateTimePicker
+                        label={t('operationDate')}
+                        value={operationDate}
+                        onChange={(newValue) => {
+                          if (newValue instanceof Date) {
+                            setOperationDate(newValue);
+                          }
+                        }}
+                        slotProps={{
+                          textField: {
+                            fullWidth: true,
+                            error: !!errors.operationDate,
+                            helperText: errors.operationDate,
+                            sx: {
+                              width: '100%',
+                              '& .MuiOutlinedInput-root': {
+                                '& fieldset': {
+                                  borderColor: activeTab === 'in' 
+                                    ? 'rgba(56, 142, 60, 0.5)' 
+                                    : activeTab === 'out' 
+                                    ? 'rgba(211, 47, 47, 0.5)'
+                                    : 'rgba(255, 160, 0, 0.5)',
+                                },
+                                '&:hover fieldset': {
+                                  borderColor: activeTab === 'in' 
+                                    ? '#388e3c' 
+                                    : activeTab === 'out' 
+                                    ? '#d32f2f'
+                                    : '#ffa000',
+                                },
+                                '&.Mui-focused fieldset': {
+                                  borderColor: activeTab === 'in' 
+                                    ? '#388e3c' 
+                                    : activeTab === 'out' 
+                                    ? '#d32f2f'
+                                    : '#ffa000',
+                                },
+                              },
+                            }
+                          }
+                        }}
+                        onError={(reason: DateTimeValidationError) => {
+                          if (reason === 'invalidDate') {
+                            setErrors(prev => ({ ...prev, operationDate: t('invalidDate') }));
+                          } else {
+                            setErrors(prev => ({ ...prev, operationDate: '' }));
+                          }
+                        }}
+                      />
+                    </LocalizationProvider>
+                  </Grid>
                   <Grid item xs={12}>
                     <TextField
                       label={t('amount')}
@@ -626,6 +706,72 @@ const CashManagement: React.FC = () => {
                     <Typography variant="body2" sx={{ fontWeight: 'bold' }}>
                       {currentOperation.voucherNumber}
                     </Typography>
+                  </Box>
+                  
+                  <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <Typography variant="body2" color="text.secondary">
+                      {t('date')}:
+                    </Typography>
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                      {isEditingDate ? (
+                        <>
+                          <LocalizationProvider dateAdapter={AdapterDateFns}>
+                            <DateTimePicker
+                              value={editedDate}
+                              onChange={(newValue) => {
+                                if (newValue instanceof Date) {
+                                  setEditedDate(newValue);
+                                }
+                              }}
+                              slotProps={{
+                                textField: {
+                                  size: "small",
+                                  sx: {
+                                    width: '200px',
+                                    '& .MuiOutlinedInput-root': {
+                                      height: '32px',
+                                    },
+                                  },
+                                }
+                              }}
+                            />
+                          </LocalizationProvider>
+                          <IconButton 
+                            size="small" 
+                            onClick={handleDateUpdate}
+                            sx={{ color: '#388e3c' }}
+                          >
+                            <Save />
+                          </IconButton>
+                          <IconButton 
+                            size="small" 
+                            onClick={() => {
+                              setIsEditingDate(false);
+                              setEditedDate(null);
+                            }}
+                            sx={{ color: '#d32f2f' }}
+                          >
+                            <Cancel />
+                          </IconButton>
+                        </>
+                      ) : (
+                        <>
+                          <Typography variant="body2" sx={{ fontWeight: 'bold' }}>
+                            {new Date(currentOperation.date).toLocaleString()}
+                          </Typography>
+                          <IconButton 
+                            size="small" 
+                            onClick={() => {
+                              setEditedDate(new Date(currentOperation.date));
+                              setIsEditingDate(true);
+                            }}
+                            sx={{ color: '#319269' }}
+                          >
+                            <Edit />
+                          </IconButton>
+                        </>
+                      )}
+                    </Box>
                   </Box>
                   
                   {currentOperation.observation && (
