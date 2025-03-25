@@ -6,6 +6,7 @@ import { AuthRequest } from '../middleware/auth';
 const router = express.Router();
 
 type OperationType = 'income' | 'expense';
+type OperationSource = 'regular' | 'invoice_payment';
 
 interface OperationStats {
     income: {
@@ -33,7 +34,8 @@ router.get('/', protect, async (req: AuthRequest, res) => {
             endDate,
             type,
             category,
-            paymentMethod
+            paymentMethod,
+            source
         } = req.query;
 
         const query: any = {};
@@ -43,6 +45,7 @@ router.get('/', protect, async (req: AuthRequest, res) => {
         if (type) query.type = type;
         if (category) query.category = category;
         if (paymentMethod) query.paymentMethod = paymentMethod;
+        if (source) query.source = source;
         
         // Date range
         if (startDate || endDate) {
@@ -90,7 +93,9 @@ router.post('/', protect, async (req: AuthRequest, res) => {
             location,
             date,
             paymentMethod,
-            reference
+            reference,
+            source,
+            documents
         } = req.body;
 
         const operation = await Operation.create({
@@ -102,7 +107,9 @@ router.post('/', protect, async (req: AuthRequest, res) => {
             createdBy: req.user._id,
             date: date || new Date(),
             paymentMethod,
-            reference
+            reference,
+            source: source || 'regular',
+            documents: documents || { deliveryNote: false, invoice: false }
         });
 
         const populatedOperation = await Operation.findById(operation._id)
@@ -127,6 +134,11 @@ router.put('/:id', protect, async (req: AuthRequest, res) => {
         // Only creator or admin can update
         if (operation.createdBy.toString() !== req.user._id.toString() && req.user.role !== 'admin') {
             return res.status(403).json({ message: 'Not authorized to update this operation' });
+        }
+
+        // If source is invoice_payment, it cannot be changed
+        if (operation.source === 'invoice_payment' && req.body.source !== 'invoice_payment') {
+            return res.status(400).json({ message: 'Cannot change source of invoice payment operation' });
         }
 
         const updatedOperation = await Operation.findByIdAndUpdate(
@@ -167,10 +179,11 @@ router.delete('/:id', protect, async (req: AuthRequest, res) => {
 // Get operations summary
 router.get('/summary/stats', protect, async (req: AuthRequest, res) => {
     try {
-        const { location, startDate, endDate } = req.query;
+        const { location, startDate, endDate, source } = req.query;
 
         const matchQuery: any = {};
         if (location) matchQuery.location = location;
+        if (source) matchQuery.source = source;
         if (startDate || endDate) {
             matchQuery.date = {};
             if (startDate) matchQuery.date.$gte = new Date(startDate as string);

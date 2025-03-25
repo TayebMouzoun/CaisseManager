@@ -10,6 +10,11 @@ export interface IOperation extends mongoose.Document {
     date: Date;
     paymentMethod: 'cash' | 'card' | 'transfer' | 'other';
     reference?: string;
+    source?: string;
+    documents?: {
+        deliveryNote: boolean;
+        invoice: boolean;
+    };
     createdAt: Date;
     updatedAt: Date;
 }
@@ -57,6 +62,21 @@ const operationSchema = new mongoose.Schema({
     reference: {
         type: String,
         trim: true,
+    },
+    source: {
+        type: String,
+        enum: ['regular', 'invoice_payment'],
+        default: 'regular',
+    },
+    documents: {
+        deliveryNote: {
+            type: Boolean,
+            default: false,
+        },
+        invoice: {
+            type: Boolean,
+            default: false,
+        }
     }
 }, {
     timestamps: true
@@ -65,5 +85,6 @@ const operationSchema = new mongoose.Schema({
 // Add index for better query performance
 operationSchema.index({ location: 1, date: -1 });
 operationSchema.index({ createdBy: 1, date: -1 });
+operationSchema.index({ source: 1 });
 
 export const Operation = mongoose.model<IOperation>('Operation', operationSchema); 

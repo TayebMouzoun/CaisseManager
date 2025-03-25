@@ -32,6 +32,14 @@ const defaultSources: Source[] = [
   },
   {
     id: uuidv4(),
+    name: 'Paiement Facture',
+    type: 'out',
+    description: 'Paiement des factures',
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+  },
+  {
+    id: uuidv4(),
     name: 'Supplier Payment',
     type: 'out',
     description: 'Payment to suppliers',

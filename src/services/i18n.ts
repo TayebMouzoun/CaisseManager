@@ -196,7 +196,19 @@ const resources = {
       "cashInSources": "Sources d'Entrée",
       "cashOutSources": "Sources de Sortie",
       "newSourceName": "Nouvelle Source",
-      "sourceName": "Nom de la Source"
+      "sourceName": "Nom de la Source",
+      
+      // Sources
+      "regular": "Régulier",
+      "invoice_payment": "Paiement Facture",
+      
+      // Document tracking
+      "documentsTracking": "Document réceptionné",
+      "deliveryNote": "BL",
+      "invoice": "Facture",
+      "documents": "Documents",
+      "received": "Reçu",
+      "pending": "En attente"
     },
   },
 };
