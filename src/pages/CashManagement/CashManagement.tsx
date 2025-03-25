@@ -55,6 +55,11 @@ import { useReactToPrint } from 'react-to-print';
 import { Source } from '../../types/sourceTypes';
 import { SelectChangeEvent } from '@mui/material/Select';
 
+interface Documents {
+  deliveryNote: boolean;
+  invoice: boolean;
+}
+
 const CashManagement: React.FC = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
@@ -74,17 +79,14 @@ const CashManagement: React.FC = () => {
   const [success, setSuccess] = useState<boolean>(false);
   const [voucherRef, setVoucherRef] = useState<React.RefObject<HTMLDivElement>>(React.createRef());
   const [relatedOperationId, setRelatedOperationId] = useState<string>('');
-<<<<<<< HEAD
   const [operationDate, setOperationDate] = useState<Date | null>(new Date());
   const [isEditingDate, setIsEditingDate] = useState(false);
   const [editedDate, setEditedDate] = useState<Date | null>(null);
-=======
   const [isInvoicePayment, setIsInvoicePayment] = useState(false);
-  const [documents, setDocuments] = useState({
+  const [documents, setDocuments] = useState<Documents>({
     deliveryNote: false,
     invoice: false,
   });
->>>>>>> 62e0e8e26f5fc7eddf98af87fd7a419d156935c2
   
   // Filtrer les sources en fonction du type d'opération
   const sourceOptions = sources
@@ -98,8 +100,9 @@ const CashManagement: React.FC = () => {
   // Debug sources
   useEffect(() => {
     console.log('All sources in Redux:', sources);
-    console.log('Filtered sourceOptions for current tab:', sourceOptions);
     console.log('Active tab:', activeTab);
+    console.log('Sources filtered by type:', sources.filter(s => s.type === (activeTab === 'return' ? 'out' : activeTab)));
+    console.log('Final sourceOptions:', sourceOptions);
   }, [sources, activeTab, sourceOptions]);
   
   // If user is not admin and has a location assigned, use that location
@@ -132,62 +135,61 @@ const CashManagement: React.FC = () => {
     setActiveTab(newValue);
   };
   
-  const validateForm = (): boolean => {
-    const newErrors: { [key: string]: string } = {};
+  const handleSubmit = () => {
+    // Validate form
+    const validationErrors: { [key: string]: string } = {};
     
     if (!amount || isNaN(parseFloat(amount)) || parseFloat(amount) <= 0) {
-      newErrors.amount = t('required');
+      validationErrors.amount = t('invalidAmount');
     }
     
     if (!source) {
-      newErrors.source = t('required');
+      validationErrors.source = t('sourceRequired');
     }
     
-    if (!personInCharge.trim()) {
-      newErrors.personInCharge = t('required');
-    }
-    
-    if (!locationId) {
-      newErrors.locationId = t('required');
-    }
-    
-    if (!operationDate) {
-      newErrors.operationDate = t('required');
+    if (!personInCharge) {
+      validationErrors.personInCharge = t('personInChargeRequired');
     }
     
     if (activeTab === 'return' && !relatedOperationId) {
-      newErrors.relatedOperationId = t('required');
+      validationErrors.relatedOperationId = t('relatedOperationRequired');
     }
     
-    setErrors(newErrors);
-    
-    return Object.keys(newErrors).length === 0;
-  };
-  
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    if (!validateForm()) {
+    if (Object.keys(validationErrors).length > 0) {
+      setErrors(validationErrors);
       return;
     }
     
-    const operationData = {
+    // Create operation object
+    const operation = {
       type: activeTab,
       amount: parseFloat(amount),
       source,
       personInCharge,
       observation,
+      locationId,
       date: operationDate?.toISOString() || new Date().toISOString(),
       createdBy: user?.id || '',
-      locationId,
+      relatedOperationId: activeTab === 'return' ? relatedOperationId : undefined,
+      documents: source === 'Paiement Facture' ? {
+        deliveryNote: documents.deliveryNote,
+        invoice: documents.invoice,
+      } : undefined,
       isSigned: false,
-      isInvoicePayment,
-      documents: isInvoicePayment ? documents : undefined,
-      ...(activeTab === 'return' && { relatedOperationId }),
     };
     
-    dispatch(addOperation(operationData));
+    // Dispatch action to add operation
+    dispatch(addOperation(operation));
+    
+    // Show success message
     setSuccess(true);
+    
+    // Reset form after successful submission
+    if (currentOperation) {
+      handlePrint();
+    } else {
+      resetForm();
+    }
   };
   
   const resetForm = () => {
@@ -201,15 +203,12 @@ const CashManagement: React.FC = () => {
     setErrors({});
     setSuccess(false);
     setRelatedOperationId('');
-<<<<<<< HEAD
     setOperationDate(new Date());
-=======
     setIsInvoicePayment(false);
     setDocuments({
       deliveryNote: false,
       invoice: false,
     });
->>>>>>> 62e0e8e26f5fc7eddf98af87fd7a419d156935c2
   };
   
   // Add effect to reset relatedOperationId when source changes in return mode
@@ -233,7 +232,6 @@ const CashManagement: React.FC = () => {
     }
   };
   
-<<<<<<< HEAD
   // Add this function to handle date updates
   const handleDateUpdate = () => {
     if (editedDate && currentOperation) {
@@ -243,7 +241,7 @@ const CashManagement: React.FC = () => {
       setOperationDate(editedDate);
     }
   };
-=======
+  
   // Handle source change
   const handleSourceChange = (event: SelectChangeEvent<string>) => {
     const selectedSource = event.target.value;
@@ -258,13 +256,12 @@ const CashManagement: React.FC = () => {
   };
 
   // Handle document change
-  const handleDocumentChange = (document: 'deliveryNote' | 'invoice') => (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleDocumentChange = (document: keyof Documents) => (event: React.ChangeEvent<HTMLInputElement>) => {
     setDocuments(prev => ({
       ...prev,
       [document]: event.target.checked
     }));
   };
->>>>>>> 62e0e8e26f5fc7eddf98af87fd7a419d156935c2
   
   return (
     <Box sx={{ p: 2 }}>
@@ -639,49 +636,57 @@ const CashManagement: React.FC = () => {
                           variant="h6" 
                           gutterBottom 
                           sx={{ color: '#d32f2f' }}
-                          key="documents-tracking-title"
                         >
                           {t('documentsTracking')}
                         </Typography>
                         <FormGroup>
                           <FormControlLabel
-                            key="delivery-note-switch"
                             control={
-                              <Switch
+                              <Checkbox
                                 checked={documents.deliveryNote}
                                 onChange={handleDocumentChange('deliveryNote')}
-                                color="error"
                                 sx={{
-                                  '& .MuiSwitch-switchBase.Mui-checked': {
+                                  color: '#d32f2f',
+                                  '&.Mui-checked': {
                                     color: '#d32f2f',
-                                  },
-                                  '& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track': {
-                                    backgroundColor: '#d32f2f',
                                   },
                                 }}
                               />
                             }
-                            label={t('deliveryNote')}
-                            sx={{ mb: 1 }}
+                            label={
+                              <Box>
+                                <Typography variant="body1">
+                                  {t('deliveryNote')}
+                                </Typography>
+                                <Typography variant="caption" sx={{ color: 'text.secondary' }}>
+                                  {documents.deliveryNote ? t('received') : t('pending')}
+                                </Typography>
+                              </Box>
+                            }
                           />
                           <FormControlLabel
-                            key="invoice-switch"
                             control={
-                              <Switch
+                              <Checkbox
                                 checked={documents.invoice}
                                 onChange={handleDocumentChange('invoice')}
-                                color="error"
                                 sx={{
-                                  '& .MuiSwitch-switchBase.Mui-checked': {
+                                  color: '#d32f2f',
+                                  '&.Mui-checked': {
                                     color: '#d32f2f',
-                                  },
-                                  '& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track': {
-                                    backgroundColor: '#d32f2f',
                                   },
                                 }}
                               />
                             }
-                            label={t('invoice')}
+                            label={
+                              <Box>
+                                <Typography variant="body1">
+                                  {t('invoice')}
+                                </Typography>
+                                <Typography variant="caption" sx={{ color: 'text.secondary' }}>
+                                  {documents.invoice ? t('received') : t('pending')}
+                                </Typography>
+                              </Box>
+                            }
                           />
                         </FormGroup>
                       </Paper>

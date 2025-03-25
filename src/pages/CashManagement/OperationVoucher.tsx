@@ -134,15 +134,53 @@ const OperationVoucher: React.FC<OperationVoucherProps> = ({ operation }) => {
               </Grid>
               
               <Grid item xs={6}>
-                <Typography variant="body2" sx={{ color: '#666' }}>
-                  {t('source')}:
-                </Typography>
+                <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
+                  <Typography variant="body2" color="text.secondary">
+                    {t('source')}:
+                  </Typography>
+                  <Typography variant="body2" sx={{ fontWeight: 'bold' }}>
+                    {operation.source}
+                  </Typography>
+                </Box>
               </Grid>
-              <Grid item xs={6}>
-                <Typography variant="body1" sx={{ fontWeight: 'bold' }}>
-                  {operation.source}
-                </Typography>
-              </Grid>
+
+              {operation.source === 'Paiement Facture' && operation.documents && (
+                <>
+                  <Grid item xs={6}>
+                    <Box sx={{ display: 'flex', justifyContent: 'space-between', mt: 1 }}>
+                      <Typography variant="body2" color="text.secondary">
+                        {t('deliveryNote')}:
+                      </Typography>
+                      <Typography 
+                        variant="body2" 
+                        sx={{ 
+                          fontWeight: 'bold',
+                          color: operation.documents.deliveryNote ? '#388e3c' : '#d32f2f'
+                        }}
+                      >
+                        {operation.documents.deliveryNote ? t('received') : t('pending')}
+                      </Typography>
+                    </Box>
+                  </Grid>
+
+                  <Grid item xs={6}>
+                    <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
+                      <Typography variant="body2" color="text.secondary">
+                        {t('invoice')}:
+                      </Typography>
+                      <Typography 
+                        variant="body2" 
+                        sx={{ 
+                          fontWeight: 'bold',
+                          color: operation.documents.invoice ? '#388e3c' : '#d32f2f'
+                        }}
+                      >
+                        {operation.documents.invoice ? t('received') : t('pending')}
+                      </Typography>
+                    </Box>
+                  </Grid>
+                </>
+              )}
               
               <Grid item xs={6}>
                 <Typography variant="body2" sx={{ color: '#666' }}>

@@ -133,6 +133,27 @@ const CashOperations: React.FC = () => {
       field: 'source',
       headerName: t('source'),
       width: 200,
+      renderCell: (params) => {
+        const operation = params.row as CashOperation;
+        if (operation.source === 'Paiement Facture' && operation.documents) {
+          return (
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+              <Typography>{operation.source}</Typography>
+              <Chip
+                label={`BL: ${operation.documents.deliveryNote ? t('received') : t('pending')}`}
+                size="small"
+                color={operation.documents.deliveryNote ? "success" : "error"}
+              />
+              <Chip
+                label={`Facture: ${operation.documents.invoice ? t('received') : t('pending')}`}
+                size="small"
+                color={operation.documents.invoice ? "success" : "error"}
+              />
+            </Box>
+          );
+        }
+        return operation.source;
+      },
     },
     {
       field: 'relatedOperation',
