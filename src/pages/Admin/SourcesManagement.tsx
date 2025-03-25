@@ -22,8 +22,9 @@ import {
   TableHead,
   TableRow,
   Alert,
+  Tooltip,
 } from '@mui/material';
-import { Edit as EditIcon, Delete as DeleteIcon, Add as AddIcon } from '@mui/icons-material';
+import { Edit as EditIcon, Delete as DeleteIcon, Add as AddIcon, Lock as LockIcon } from '@mui/icons-material';
 import { useDispatch, useSelector } from 'react-redux';
 import { RootState } from '../../services/store';
 import { addSource, updateSource, deleteSource } from '../../services/slices/sourcesSlice';
@@ -104,6 +105,17 @@ const SourcesManagement: React.FC = () => {
   const inSources = sources.filter((s: Source) => s.type === 'in');
   const outSources = sources.filter((s: Source) => s.type === 'out');
 
+  const renderSourceName = (source: Source) => (
+    <Box sx={{ display: 'flex', alignItems: 'center' }}>
+      {source.name}
+      {source.isFixed && (
+        <Tooltip title={t('fixedSource', 'This source is fixed and cannot be modified')}>
+          <LockIcon sx={{ ml: 1, fontSize: '0.9rem', color: 'warning.main' }} />
+        </Tooltip>
+      )}
+    </Box>
+  );
+
   return (
     <Box sx={{ p: 3 }}>
       <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 3 }}>
@@ -142,13 +154,21 @@ const SourcesManagement: React.FC = () => {
             <TableBody>
               {inSources.map((source: Source) => (
                 <TableRow key={source.id}>
-                  <TableCell>{source.name}</TableCell>
+                  <TableCell>{renderSourceName(source)}</TableCell>
                   <TableCell>{source.description}</TableCell>
                   <TableCell align="right">
-                    <IconButton onClick={() => handleOpenDialog(source)} color="primary">
+                    <IconButton 
+                      onClick={() => handleOpenDialog(source)} 
+                      color="primary"
+                      disabled={source.isFixed}
+                    >
                       <EditIcon />
                     </IconButton>
-                    <IconButton onClick={() => handleDelete(source.id)} color="error">
+                    <IconButton 
+                      onClick={() => handleDelete(source.id)} 
+                      color="error"
+                      disabled={source.isFixed}
+                    >
                       <DeleteIcon />
                     </IconButton>
                   </TableCell>
@@ -175,13 +195,21 @@ const SourcesManagement: React.FC = () => {
             <TableBody>
               {outSources.map((source: Source) => (
                 <TableRow key={source.id}>
-                  <TableCell>{source.name}</TableCell>
+                  <TableCell>{renderSourceName(source)}</TableCell>
                   <TableCell>{source.description}</TableCell>
                   <TableCell align="right">
-                    <IconButton onClick={() => handleOpenDialog(source)} color="primary">
+                    <IconButton 
+                      onClick={() => handleOpenDialog(source)} 
+                      color="primary"
+                      disabled={source.isFixed}
+                    >
                       <EditIcon />
                     </IconButton>
-                    <IconButton onClick={() => handleDelete(source.id)} color="error">
+                    <IconButton 
+                      onClick={() => handleDelete(source.id)} 
+                      color="error"
+                      disabled={source.isFixed}
+                    >
                       <DeleteIcon />
                     </IconButton>
                   </TableCell>

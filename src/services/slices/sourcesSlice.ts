@@ -37,6 +37,7 @@ const defaultSources: Source[] = [
     description: 'Paiement des factures',
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),
+    isFixed: true,
   },
   {
     id: uuidv4(),
@@ -83,11 +84,17 @@ const sourcesSlice = createSlice({
   initialState,
   reducers: {
     setSources: (state, action: PayloadAction<Source[]>) => {
-      state.sources = action.payload;
+      const fixedSources = state.sources.filter(s => s.isFixed);
+      const newSources = action.payload.filter(s => !fixedSources.some(fs => fs.name === s.name));
+      state.sources = [...fixedSources, ...newSources];
       state.loading = false;
       state.error = null;
     },
     addSource: (state, action: PayloadAction<Source>) => {
+      if (state.sources.some(s => s.isFixed && s.name === action.payload.name)) {
+        state.error = 'Cannot add a source with the same name as a fixed source';
+        return;
+      }
       state.sources.push(action.payload);
       state.loading = false;
       state.error = null;
@@ -95,12 +102,21 @@ const sourcesSlice = createSlice({
     updateSource: (state, action: PayloadAction<Source>) => {
       const index = state.sources.findIndex(s => s.id === action.payload.id);
       if (index !== -1) {
+        if (state.sources[index].isFixed) {
+          state.error = 'Cannot modify a fixed source';
+          return;
+        }
         state.sources[index] = action.payload;
       }
       state.loading = false;
       state.error = null;
     },
     deleteSource: (state, action: PayloadAction<string>) => {
+      const sourceToDelete = state.sources.find(s => s.id === action.payload);
+      if (sourceToDelete?.isFixed) {
+        state.error = 'Cannot delete a fixed source';
+        return;
+      }
       state.sources = state.sources.filter(s => s.id !== action.payload);
       state.loading = false;
       state.error = null;

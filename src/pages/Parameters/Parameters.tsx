@@ -32,6 +32,7 @@ import {
   ListItemText,
   ListItemSecondaryAction,
   IconButton,
+  Tooltip,
 } from '@mui/material';
 import {
   Save as SaveIcon,
@@ -46,6 +47,7 @@ import {
   TrendingUp,
   TrendingDown,
   Category as CategoryIcon,
+  Lock as LockIcon,
 } from '@mui/icons-material';
 import { v4 as uuidv4 } from 'uuid';
 import { RootState } from '../../services/store';
@@ -277,6 +279,14 @@ const Parameters: React.FC = () => {
   };
   
   const handleDeleteSource = (id: number, type: 'in' | 'out') => {
+    const sources = type === 'in' ? cashInSources : cashOutSources;
+    const source = sources.find(s => s.id === id);
+    
+    // Don't allow deleting fixed sources
+    if (source && source.name === 'Paiement Facture') {
+      return;
+    }
+    
     if (type === 'in') {
       setCashInSources(cashInSources.filter(source => source.id !== id));
     } else {
@@ -286,6 +296,14 @@ const Parameters: React.FC = () => {
   };
   
   const handleToggleSourceActive = (id: number, type: 'in' | 'out') => {
+    const sources = type === 'in' ? cashInSources : cashOutSources;
+    const source = sources.find(s => s.id === id);
+    
+    // Don't allow toggling fixed sources
+    if (source && source.name === 'Paiement Facture') {
+      return;
+    }
+    
     if (type === 'in') {
       setCashInSources(
         cashInSources.map(source => 
@@ -655,7 +673,16 @@ const Parameters: React.FC = () => {
                         }}
                       >
                         <ListItemText 
-                          primary={source.name}
+                          primary={
+                            <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                              {source.name}
+                              {source.name === 'Paiement Facture' && (
+                                <Tooltip title={t('fixedSource', 'This source is fixed and cannot be modified')}>
+                                  <LockIcon sx={{ ml: 1, fontSize: '0.9rem', color: 'warning.main' }} />
+                                </Tooltip>
+                              )}
+                            </Box>
+                          }
                           sx={{ flex: '1 1 auto' }}
                         />
                         <FormControlLabel
@@ -665,6 +692,7 @@ const Parameters: React.FC = () => {
                               onChange={() => handleToggleSourceActive(source.id, 'in')}
                               size="small"
                               color="success"
+                              disabled={source.name === 'Paiement Facture'}
                             />
                           }
                           label={source.active ? t('active') : t('inactive')}
@@ -674,6 +702,7 @@ const Parameters: React.FC = () => {
                           onClick={() => setEditingSource({id: source.id, name: source.name, type: 'in'})}
                           size="small"
                           color="default"
+                          disabled={source.name === 'Paiement Facture'}
                         >
                           <EditIcon fontSize="small" />
                         </IconButton>
@@ -682,6 +711,7 @@ const Parameters: React.FC = () => {
                           size="small"
                           color="default"
                           sx={{ color: '#888' }}
+                          disabled={source.name === 'Paiement Facture'}
                         >
                           <DeleteIcon fontSize="small" />
                         </IconButton>
@@ -768,7 +798,16 @@ const Parameters: React.FC = () => {
                         }}
                       >
                         <ListItemText 
-                          primary={source.name}
+                          primary={
+                            <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                              {source.name}
+                              {source.name === 'Paiement Facture' && (
+                                <Tooltip title={t('fixedSource', 'This source is fixed and cannot be modified')}>
+                                  <LockIcon sx={{ ml: 1, fontSize: '0.9rem', color: 'warning.main' }} />
+                                </Tooltip>
+                              )}
+                            </Box>
+                          }
                           sx={{ flex: '1 1 auto' }}
                         />
                         <FormControlLabel
@@ -778,6 +817,7 @@ const Parameters: React.FC = () => {
                               onChange={() => handleToggleSourceActive(source.id, 'out')}
                               size="small"
                               color="error"
+                              disabled={source.name === 'Paiement Facture'}
                             />
                           }
                           label={source.active ? t('active') : t('inactive')}
@@ -787,6 +827,7 @@ const Parameters: React.FC = () => {
                           onClick={() => setEditingSource({id: source.id, name: source.name, type: 'out'})}
                           size="small"
                           color="default"
+                          disabled={source.name === 'Paiement Facture'}
                         >
                           <EditIcon fontSize="small" />
                         </IconButton>
@@ -795,6 +836,7 @@ const Parameters: React.FC = () => {
                           size="small"
                           color="default"
                           sx={{ color: '#888' }}
+                          disabled={source.name === 'Paiement Facture'}
                         >
                           <DeleteIcon fontSize="small" />
                         </IconButton>

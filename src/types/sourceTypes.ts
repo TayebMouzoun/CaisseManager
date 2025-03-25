@@ -7,6 +7,7 @@ export interface Source {
   description?: string;
   createdAt: string;
   updatedAt: string;
+  isFixed?: boolean;
 }
 
 export interface SourceFormData {
