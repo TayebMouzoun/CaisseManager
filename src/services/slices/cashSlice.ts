@@ -17,6 +17,10 @@ export interface CashOperation {
   isSigned: boolean;
   attachmentUrl?: string; // URL to the scanned signed voucher
   relatedOperationId?: string; // For return operations, reference to the original out operation
+  documents?: {
+    deliveryNote: boolean;
+    invoice: boolean;
+  };
 }
 
 interface CashBalance {

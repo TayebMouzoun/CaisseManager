@@ -23,6 +23,11 @@ import {
   Alert,
   Card,
   CardContent,
+  FormControlLabel,
+  Switch,
+  Checkbox,
+  Divider,
+  FormGroup,
 } from '@mui/material';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
@@ -48,6 +53,7 @@ import { formatCurrency } from '../../utils/formatters';
 import OperationVoucher from './OperationVoucher';
 import { useReactToPrint } from 'react-to-print';
 import { Source } from '../../types/sourceTypes';
+import { SelectChangeEvent } from '@mui/material/Select';
 
 const CashManagement: React.FC = () => {
   const { t } = useTranslation();
@@ -68,9 +74,17 @@ const CashManagement: React.FC = () => {
   const [success, setSuccess] = useState<boolean>(false);
   const [voucherRef, setVoucherRef] = useState<React.RefObject<HTMLDivElement>>(React.createRef());
   const [relatedOperationId, setRelatedOperationId] = useState<string>('');
+<<<<<<< HEAD
   const [operationDate, setOperationDate] = useState<Date | null>(new Date());
   const [isEditingDate, setIsEditingDate] = useState(false);
   const [editedDate, setEditedDate] = useState<Date | null>(null);
+=======
+  const [isInvoicePayment, setIsInvoicePayment] = useState(false);
+  const [documents, setDocuments] = useState({
+    deliveryNote: false,
+    invoice: false,
+  });
+>>>>>>> 62e0e8e26f5fc7eddf98af87fd7a419d156935c2
   
   // Filtrer les sources en fonction du type d'opération
   const sourceOptions = sources
@@ -167,6 +181,8 @@ const CashManagement: React.FC = () => {
       createdBy: user?.id || '',
       locationId,
       isSigned: false,
+      isInvoicePayment,
+      documents: isInvoicePayment ? documents : undefined,
       ...(activeTab === 'return' && { relatedOperationId }),
     };
     
@@ -185,7 +201,15 @@ const CashManagement: React.FC = () => {
     setErrors({});
     setSuccess(false);
     setRelatedOperationId('');
+<<<<<<< HEAD
     setOperationDate(new Date());
+=======
+    setIsInvoicePayment(false);
+    setDocuments({
+      deliveryNote: false,
+      invoice: false,
+    });
+>>>>>>> 62e0e8e26f5fc7eddf98af87fd7a419d156935c2
   };
   
   // Add effect to reset relatedOperationId when source changes in return mode
@@ -209,6 +233,7 @@ const CashManagement: React.FC = () => {
     }
   };
   
+<<<<<<< HEAD
   // Add this function to handle date updates
   const handleDateUpdate = () => {
     if (editedDate && currentOperation) {
@@ -218,6 +243,28 @@ const CashManagement: React.FC = () => {
       setOperationDate(editedDate);
     }
   };
+=======
+  // Handle source change
+  const handleSourceChange = (event: SelectChangeEvent<string>) => {
+    const selectedSource = event.target.value;
+    setSource(selectedSource);
+    // Reset documents if source is not "Paiement Facture"
+    if (selectedSource !== 'Paiement Facture') {
+      setDocuments({
+        deliveryNote: false,
+        invoice: false,
+      });
+    }
+  };
+
+  // Handle document change
+  const handleDocumentChange = (document: 'deliveryNote' | 'invoice') => (event: React.ChangeEvent<HTMLInputElement>) => {
+    setDocuments(prev => ({
+      ...prev,
+      [document]: event.target.checked
+    }));
+  };
+>>>>>>> 62e0e8e26f5fc7eddf98af87fd7a419d156935c2
   
   return (
     <Box sx={{ p: 2 }}>
@@ -416,7 +463,7 @@ const CashManagement: React.FC = () => {
                         labelId="source-label"
                         value={source}
                         label={t('source')}
-                        onChange={(e) => setSource(e.target.value)}
+                        onChange={handleSourceChange}
                       >
                         <MenuItem value="">{t('sourceSelect')}</MenuItem>
                         {sourceOptions.map((option) => (
@@ -582,6 +629,62 @@ const CashManagement: React.FC = () => {
                       <Typography variant="caption" sx={{ color: '#ffa000', fontStyle: 'italic', mt: 1, display: 'block' }}>
                         {t('returnSourceHelp', 'The list of operations has been filtered to show only cash out operations with this source')}
                       </Typography>
+                    </Grid>
+                  )}
+                  
+                  {source === 'Paiement Facture' && (
+                    <Grid item xs={12}>
+                      <Paper sx={{ p: 2, mb: 2, bgcolor: '#f5f5f5' }}>
+                        <Typography 
+                          variant="h6" 
+                          gutterBottom 
+                          sx={{ color: '#d32f2f' }}
+                          key="documents-tracking-title"
+                        >
+                          {t('documentsTracking')}
+                        </Typography>
+                        <FormGroup>
+                          <FormControlLabel
+                            key="delivery-note-switch"
+                            control={
+                              <Switch
+                                checked={documents.deliveryNote}
+                                onChange={handleDocumentChange('deliveryNote')}
+                                color="error"
+                                sx={{
+                                  '& .MuiSwitch-switchBase.Mui-checked': {
+                                    color: '#d32f2f',
+                                  },
+                                  '& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track': {
+                                    backgroundColor: '#d32f2f',
+                                  },
+                                }}
+                              />
+                            }
+                            label={t('deliveryNote')}
+                            sx={{ mb: 1 }}
+                          />
+                          <FormControlLabel
+                            key="invoice-switch"
+                            control={
+                              <Switch
+                                checked={documents.invoice}
+                                onChange={handleDocumentChange('invoice')}
+                                color="error"
+                                sx={{
+                                  '& .MuiSwitch-switchBase.Mui-checked': {
+                                    color: '#d32f2f',
+                                  },
+                                  '& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track': {
+                                    backgroundColor: '#d32f2f',
+                                  },
+                                }}
+                              />
+                            }
+                            label={t('invoice')}
+                          />
+                        </FormGroup>
+                      </Paper>
                     </Grid>
                   )}
                   

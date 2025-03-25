@@ -1,0 +1,32 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "outDir": "dist",
+    "module": "commonjs",
+    "target": "es2017",
+    "isolatedModules": false,
+    "noEmit": false,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
+    "resolveJsonModule": true,
+    "moduleResolution": "node",
+    "allowJs": true
+  },
+  "include": [
+    "src/server.ts",
+    "src/config/**/*",
+    "src/models/**/*",
+    "src/routes/**/*",
+    "src/middleware/**/*"
+  ],
+  "exclude": [
+    "node_modules",
+    "build",
+    "dist",
+    "src/components",
+    "src/pages",
+    "**/*.test.ts",
+    "**/*.spec.ts"
+  ]
+} 
